@@ -3,20 +3,22 @@ body {
   padding: 0;
   background-color: #fff;
   font-family: Arial, sans-serif;
+  overflow-x: hidden; /* Prevent horizontal scroll on whole page */
 }
 
 .app-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100vw;
 }
 
 .main-content {
   flex: 1;
   width: 100%;
-  max-width: 1200px;
+  max-width: 100%; /* Ensure it fits on mobile */
   margin: 0 auto;
-  padding-top: 5px; /* Minimal padding */
+  padding: 0 5px; /* Minimal side padding */
 }
 
 .announcement {

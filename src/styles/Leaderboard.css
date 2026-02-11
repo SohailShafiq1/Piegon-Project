@@ -1,6 +1,7 @@
 .leaderboard-container {
-  padding: 5px 10px;
+  padding: 5px 0; /* Remove side padding to maximize table width */
   background-color: #fff;
+  width: 100%;
 }
 
 .table-responsive {
@@ -12,28 +13,49 @@
   width: 100%;
   border-collapse: collapse;
   font-family: Arial, sans-serif;
-  font-size: 0.8rem;
-  min-width: 800px; /* Reduced min-width to fit better */
+  font-size: 0.75rem; /* Reduced base font */
+  table-layout: fixed; /* Fixed layout for exact control */
 }
 
 .leaderboard-table th {
-  background-color: #fdfdad; /* Paler yellow matching screenshot */
+  background-color: #fdfdad;
   color: #000;
-  padding: 4px 2px; /* Very compact */
+  padding: 3px 1px;
   text-align: center;
   border: 1px solid #ddd;
   font-weight: bold;
+  font-size: 0.65rem;
+  overflow: hidden;
+  white-space: normal; /* Allow headers like 'pigeon 1' to wrap if needed */
+  line-height: 1;
 }
 
+/* Column widths */
+.leaderboard-table th:nth-child(1) { width: 5%; } /* Sr */
+.leaderboard-table th:nth-child(2) { width: 25%; } /* Name */
+.leaderboard-table th:nth-child(3) { width: 12%; } /* Start Time */
+.leaderboard-table th:nth-child(4) { width: 8%; }  /* p1 */
+.leaderboard-table th:nth-child(5) { width: 8%; }  /* p2 */
+.leaderboard-table th:nth-child(6) { width: 8%; }  /* p3 */
+.leaderboard-table th:nth-child(7) { width: 8%; }  /* p4 */
+.leaderboard-table th:nth-child(8) { width: 8%; }  /* p5 */
+.leaderboard-table th:nth-child(9) { width: 8%; }  /* p6 */
+.leaderboard-table th:nth-child(10) { width: 8%; } /* p7 */
+.leaderboard-table th:nth-child(11) { width: 10%; } /* Total */
+
 .leaderboard-table td {
-  padding: 4px 2px; /* Very compact to fit more rows */
+  padding: 3px 1px;
   text-align: center;
   border: 1px solid #ddd;
   color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.65rem;
 }
 
 .leaderboard-table tr:nth-child(even) {
-  background-color: #fff;
+  background-color: #fcfcfc;
 }
 
 .name-cell {
@@ -41,8 +63,10 @@
   font-weight: bold;
   text-align: right !important;
   direction: rtl;
-  min-width: 110px;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
+  white-space: normal; /* Allow name to wrap if needed */
+  line-height: 1.1;
+  padding-right: 2px !important;
 }
 
 .total-cell {
@@ -50,11 +74,15 @@
   background-color: #f0f0f0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
     .leaderboard-table {
-        font-size: 0.7rem;
+        font-size: 0.55rem;
     }
     .leaderboard-table th, .leaderboard-table td {
-        padding: 3px 2px;
+        font-size: 0.55rem;
+        padding: 2px 0.5px;
+    }
+    .name-cell {
+        font-size: 0.6rem;
     }
 }
