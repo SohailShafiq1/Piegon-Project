@@ -36,12 +36,25 @@
   min-width: fit-content;
 }
 
-.nav-links li a {
+.nav-links li a, .contact-nav-button {
   color: white;
   text-decoration: none;
-  font-size: 0.7rem; /* Reduced font size as requested */
+  font-size: 0.7rem; /* Reduced font size as requested earlier */
   font-weight: normal;
   display: block;
+}
+
+.contact-nav-button {
+  background-color: #ffffff;
+  color: #004a99 !important;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.contact-nav-button:hover {
+  background-color: #e0e0e0;
 }
 
 .current-users {
