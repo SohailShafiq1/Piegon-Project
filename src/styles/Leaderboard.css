@@ -1,0 +1,60 @@
+.leaderboard-container {
+  padding: 5px 10px;
+  background-color: #fff;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+  font-size: 0.8rem;
+  min-width: 800px; /* Reduced min-width to fit better */
+}
+
+.leaderboard-table th {
+  background-color: #fdfdad; /* Paler yellow matching screenshot */
+  color: #000;
+  padding: 4px 2px; /* Very compact */
+  text-align: center;
+  border: 1px solid #ddd;
+  font-weight: bold;
+}
+
+.leaderboard-table td {
+  padding: 4px 2px; /* Very compact to fit more rows */
+  text-align: center;
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+.leaderboard-table tr:nth-child(even) {
+  background-color: #fff;
+}
+
+.name-cell {
+  background-color: #fff;
+  font-weight: bold;
+  text-align: right !important;
+  direction: rtl;
+  min-width: 110px;
+  font-size: 0.75rem;
+}
+
+.total-cell {
+  font-weight: bold;
+  background-color: #f0f0f0;
+}
+
+@media (max-width: 768px) {
+    .leaderboard-table {
+        font-size: 0.7rem;
+    }
+    .leaderboard-table th, .leaderboard-table td {
+        padding: 3px 2px;
+    }
+}

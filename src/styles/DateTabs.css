@@ -1,0 +1,52 @@
+.date-tabs-container {
+  display: flex;
+  justify-content: center;
+  padding: 5px; /* Reduced padding */
+  background-color: #fff; /* White background */
+}
+
+.date-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0; /* No gap between boxes */
+  border: 1px solid #004a99;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.date-tab {
+  padding: 4px 8px; /* Compact padding */
+  border: none;
+  background-color: white;
+  color: #004a99;
+  cursor: pointer;
+  font-size: 0.75rem; /* Smaller font */
+  transition: all 0.2s;
+  border-right: 1px solid #004a99;
+}
+
+.date-tab:last-child {
+  border-right: none;
+}
+
+.date-tab.active {
+  background-color: #004a99;
+  color: white;
+}
+
+.date-tab:hover:not(.active) {
+  background-color: #e6f0ff;
+}
+
+@media (max-width: 768px) {
+    .date-tabs {
+        flex-direction: row;
+        width: 100%;
+        justify-content: center;
+    }
+    .date-tab {
+        flex: 1;
+        padding: 8px 5px;
+        font-size: 0.75rem;
+    }
+}
