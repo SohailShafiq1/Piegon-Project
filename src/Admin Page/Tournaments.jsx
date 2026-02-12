@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaTrophy, FaUserShield, FaArrowLeft, FaSave, FaTrash, FaImage, FaCalendarAlt, FaClock, FaDove } from 'react-icons/fa';
+import { FaPlus, FaTrophy, FaUserShield, FaArrowLeft, FaSave, FaTrash, FaImage, FaCalendarAlt, FaClock, FaDove, FaUserPlus, FaUserFriends } from 'react-icons/fa';
 import Modal from '../components/Modal';
 import '../styles/Modal.css';
 import './Tournaments.css';
@@ -28,10 +28,48 @@ const Tournaments = () => {
     helperPigeons: 0,
     status: 'Upcoming',
     showOnHome: true,
-    posters: []
+    posters: [],
+    participants: []
   };
 
   const [formData, setFormData] = useState(initialFormState);
+  const [newParticipant, setNewParticipant] = useState({ name: '', image: '', address: '', phone: '' });
+  const [showParticipantForm, setShowParticipantForm] = useState(false);
+  const [participantModalOpen, setParticipantModalOpen] = useState(false);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewParticipant({ ...newParticipant, image: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddParticipant = () => {
+    if (!newParticipant.name) {
+      setModalContent({
+        title: 'Validation Error',
+        message: 'Participant name is required'
+      });
+      setModalOpen(true);
+      return;
+    }
+    setFormData({
+      ...formData,
+      participants: [...(formData.participants || []), newParticipant]
+    });
+    setNewParticipant({ name: '', image: '', address: '', phone: '' });
+    setParticipantModalOpen(false);
+  };
+
+  const removeParticipant = (index) => {
+    const newParticipants = [...formData.participants];
+    newParticipants.splice(index, 1);
+    setFormData({ ...formData, participants: newParticipants });
+  };
 
   useEffect(() => {
     fetchTournaments();
@@ -109,7 +147,8 @@ const Tournaments = () => {
       ...t,
       admin: t.admin?._id || t.admin,
       startDate: t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      posters: t.posters || []
+      posters: t.posters || [],
+      participants: t.participants || []
     });
     setView('edit');
   };
@@ -376,7 +415,101 @@ const Tournaments = () => {
             <button type="submit" className="save-btn">
               <FaSave /> {selectedTournament ? 'Update Tournament' : 'Create Tournament'}
             </button>
+            
+            {selectedTournament && (
+              <button 
+                type="button" 
+                className="add-person-btn" 
+                onClick={() => setParticipantModalOpen(true)}
+              >
+                <FaUserPlus /> Add Persons
+              </button>
+            )}
           </div>
+
+          {selectedTournament && (
+            <div className="participants-section">
+              <div className="participants-header">
+                <h3><FaUserFriends /> Enrolled Participants ({(formData.participants || []).length})</h3>
+              </div>
+
+              {participantModalOpen && (
+                <div className="modal-overlay">
+                  <div className="participant-modal">
+                    <div className="modal-header">
+                      <h3>Add New Participant</h3>
+                      <button type="button" className="close-btn" onClick={() => setParticipantModalOpen(false)}>&times;</button>
+                    </div>
+                    <div className="modal-body">
+                      <div className="form-group">
+                        <label>Participant Photo (Gallery)</label>
+                        <div className="file-input-wrapper">
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            id="participant-photo"
+                          />
+                          <label htmlFor="participant-photo" className="file-label">
+                            {newParticipant.image ? 'Change Photo' : 'Select from Gallery'}
+                          </label>
+                          {newParticipant.image && (
+                            <div className="photo-preview">
+                              <img src={newParticipant.image} alt="Preview" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label>Full Name *</label>
+                        <input 
+                          type="text" 
+                          value={newParticipant.name}
+                          onChange={(e) => setNewParticipant({...newParticipant, name: e.target.value})}
+                          placeholder="Enter name"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Phone Number (Optional)</label>
+                        <input 
+                          type="text" 
+                          value={newParticipant.phone}
+                          onChange={(e) => setNewParticipant({...newParticipant, phone: e.target.value})}
+                          placeholder="Contact number"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Address (Optional)</label>
+                        <input 
+                          type="text" 
+                          value={newParticipant.address}
+                          onChange={(e) => setNewParticipant({...newParticipant, address: e.target.value})}
+                          placeholder="Full address"
+                        />
+                      </div>
+                    </div>
+                    <div className="modal-footer">
+                      <button type="button" className="cancel-btn" onClick={() => setParticipantModalOpen(false)}>Cancel</button>
+                      <button type="button" className="confirm-btn" onClick={handleAddParticipant}>Enroll Participant</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="participants-grid">
+                {(formData.participants || []).map((p, index) => (
+                  <div key={index} className="participant-card-mini">
+                    <img src={p.image || 'https://via.placeholder.com/40'} alt={p.name} />
+                    <div className="p-details">
+                      <span className="p-name">{p.name}</span>
+                      {p.phone && <span className="p-phone">{p.phone}</span>}
+                    </div>
+                    <button type="button" className="p-remove" onClick={() => removeParticipant(index)}>×</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </form>
       </div>
     );

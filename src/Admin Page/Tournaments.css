@@ -259,6 +259,19 @@
   gap: 16px;
   padding-top: 24px;
   border-top: 1px solid #edf2f7;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 650px) {
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+  
+  .form-actions button {
+    width: 100%;
+    margin: 0;
+    justify-content: center;
+  }
 }
 
 .save-btn {
@@ -311,19 +324,232 @@
   object-fit: cover;
 }
 
-.poster-tag button {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background: rgba(0,0,0,0.5);
+.poster-tag button:hover {
+  background: rgba(220, 38, 38, 0.8);
+}
+
+.readonly-input {
+  background-color: #f8fafc;
+  cursor: not-allowed;
+  font-weight: 600;
+  color: #c9a44c;
+}
+
+.add-person-btn {
+  background-color: #1a202c;
   color: white;
   border: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  font-size: 12px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-person-btn:hover {
+  background-color: #2d3748;
+}
+
+/* Participants Section */
+.participants-section {
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 2px dashed #edf2f7;
+}
+
+.participants-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.participants-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #2d3748;
+}
+
+/* Participant Modal Styling */
+.participant-modal {
+  background: white;
+  width: 95%;
+  max-width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.participant-modal .modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #edf2f7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.participant-modal .modal-header h3 {
+  margin: 0;
+  color: #2d3748;
+}
+
+.participant-modal .modal-body {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.participant-modal .modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #edf2f7;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.file-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.file-input-wrapper input[type="file"] {
+  display: none;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 10px 16px;
+  background: #f7fafc;
+  border: 2px dashed #cbd5e0;
+  border-radius: 8px;
+  color: #4a5568;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.file-label:hover {
+  background: #edf2f7;
+  border-color: #a0aec0;
+}
+
+.photo-preview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #c9a44c;
+  margin: 0 auto;
+}
+
+.photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.participant-modal .cancel-btn {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #718096;
+}
+
+.participant-modal .confirm-btn {
+  background: #c9a44c;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.participants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.participant-card-mini {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #edf2f7;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  transition: transform 0.2s;
+}
+
+.participant-card-mini:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.participant-card-mini img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f1f5f9;
+  border: 1px solid #edf2f7;
+}
+
+.p-details {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.p-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #2d3748;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.p-phone {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.p-remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+.participant-card-mini:hover .p-remove {
+  opacity: 1;
+}
+
