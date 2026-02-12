@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaTrophy, FaUserShield, FaArrowLeft, FaSave, FaTrash, FaImage, FaCalendarAlt, FaClock, FaDove } from 'react-icons/fa';
+import Modal from '../components/Modal';
+import '../styles/Modal.css';
 import './Tournaments.css';
 
 const Tournaments = () => {
@@ -8,6 +10,10 @@ const Tournaments = () => {
   const [view, setView] = useState('list'); // 'list' or 'edit'
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', message: '' });
 
   const currentUser = JSON.parse(localStorage.getItem('adminUser'));
 
@@ -88,7 +94,11 @@ const Tournaments = () => {
     const isSuperAdmin = currentUser?.role === 'Super Admin';
 
     if (!isAssignedAdmin && !isSuperAdmin) {
-      alert("You are not an admin for this tournament.");
+      setModalContent({
+        title: 'Access Denied',
+        message: 'You are not an admin for this tournament.'
+      });
+      setModalOpen(true);
       return;
     }
 
@@ -112,9 +122,27 @@ const Tournaments = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     if (formData.noteTimePigeons > formData.numPigeons) {
-      alert("Note time pigeons cannot be greater than total number of pigeons");
+      setModalContent({
+        title: 'Validation Error',
+        message: 'Note time pigeons cannot be greater than total number of pigeons'
+      });
+      setModalOpen(true);
       return;
     }
+
+    // Calculate skipping dates (1, 3, 5...)
+    const flyingDates = [];
+    const start = new Date(formData.startDate);
+    for (let i = 0; i < formData.numDays; i++) {
+        const nextDate = new Date(start);
+        nextDate.setDate(start.getDate() + (i * 2));
+        flyingDates.push(nextDate);
+    }
+
+    const tournamentToSave = {
+        ...formData,
+        flyingDates
+    };
 
     const method = selectedTournament ? 'PUT' : 'POST';
     const url = selectedTournament 
@@ -129,7 +157,7 @@ const Tournaments = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(tournamentToSave),
       });
       if (response.ok) {
         setView('list');
@@ -382,6 +410,13 @@ const Tournaments = () => {
           </div>
         )}
       </div>
+
+      <Modal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        title={modalContent.title} 
+        message={modalContent.message} 
+      />
     </div>
   );
 };
