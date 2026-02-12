@@ -81,7 +81,7 @@ const Tournaments = () => {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  const calculateWinners = (participants, startTime, scoringCount = 0) => {
+  const calculateWinners = (participants, startTime) => {
     let latestFirstElapsed = -1;
     let firstWinnerName = "";
     
@@ -100,14 +100,12 @@ const Tournaments = () => {
     const startSeconds = getSeconds(startTime || '06:00');
 
     (participants || []).forEach(p => {
+      // Get ALL entered times including helpers
       const enteredTimes = (p.pigeonTimes || []).filter(t => t && t !== '');
-      const k = enteredTimes.length;
-      const skip = Math.max(0, k - scoringCount);
-      const scoringEntries = enteredTimes.slice(skip);
       
-      if (scoringEntries.length > 0) {
-        // 1. FIRST WINNER: Person whose FIRST SCORING pigeon came LATEST (Elapsed)
-        let firstLandSeconds = getSeconds(scoringEntries[0]);
+      if (enteredTimes.length > 0) {
+        // 1. FIRST WINNER: Person whose absolute P1 (index 0) came LATEST
+        let firstLandSeconds = getSeconds(enteredTimes[0]);
         if (firstLandSeconds < startSeconds) firstLandSeconds += 24 * 3600;
         const firstElapsed = firstLandSeconds - startSeconds;
         
@@ -116,8 +114,8 @@ const Tournaments = () => {
           firstWinnerName = p.name;
         }
 
-        // 2. LAST WINNER: Person whose LAST SCORING pigeon came LATEST (Elapsed)
-        let lastLandSeconds = getSeconds(scoringEntries[scoringEntries.length - 1]);
+        // 2. LAST WINNER: Person whose absolute LAST recorded pigeon came LATEST
+        let lastLandSeconds = getSeconds(enteredTimes[enteredTimes.length - 1]);
         if (lastLandSeconds < startSeconds) lastLandSeconds += 24 * 3600;
         const lastElapsed = lastLandSeconds - startSeconds;
 
@@ -153,7 +151,7 @@ const Tournaments = () => {
     updatedParticipants[participantIndex] = updatedParticipant;
 
     // Recalculate First and Last Winners
-    const { firstWinner, lastWinner } = calculateWinners(updatedParticipants, formData.startTime, formData.numPigeons || 0);
+    const { firstWinner, lastWinner } = calculateWinners(updatedParticipants, formData.startTime);
 
     setFormData({ 
       ...formData, 
@@ -374,7 +372,7 @@ const Tournaments = () => {
     }));
 
     // Recalculate winners one last time before saving
-    const { firstWinner, lastWinner } = calculateWinners(updatedParticipants, formData.startTime, formData.numPigeons || 0);
+    const { firstWinner, lastWinner } = calculateWinners(updatedParticipants, formData.startTime);
 
     const tournamentToSave = {
         ...formData,
