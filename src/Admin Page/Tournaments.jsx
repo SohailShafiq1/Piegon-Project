@@ -136,7 +136,7 @@ const Tournaments = () => {
     }
   };
 
-  const handleAddParticipant = () => {
+  const handleAddParticipant = async () => {
     if (!newParticipant.name) {
       setModalContent({
         title: 'Validation Error',
@@ -146,18 +146,64 @@ const Tournaments = () => {
       setModalOpen(true);
       return;
     }
-    setFormData({
-      ...formData,
-      participants: [...(formData.participants || []), newParticipant]
-    });
+
+    const updatedParticipants = [...(formData.participants || []), newParticipant];
+    const updatedFormData = { ...formData, participants: updatedParticipants };
+
+    // Update local state
+    setFormData(updatedFormData);
     setNewParticipant({ name: '', image: '', address: '', phone: '' });
     setParticipantModalOpen(false);
+
+    // If editing, save immediately
+    if (selectedTournament) {
+      const token = localStorage.getItem('adminToken');
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${selectedTournament._id}`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(updatedFormData),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setSelectedTournament(data);
+          fetchTournaments();
+        } else {
+          console.error("Failed to auto-save participant");
+        }
+      } catch (error) {
+        console.error("Error auto-saving participant:", error);
+      }
+    }
   };
 
-  const removeParticipant = (index) => {
+  const removeParticipant = async (index) => {
     const newParticipants = [...formData.participants];
     newParticipants.splice(index, 1);
-    setFormData({ ...formData, participants: newParticipants });
+    const updatedFormData = { ...formData, participants: newParticipants };
+    setFormData(updatedFormData);
+
+    // If editing, save immediately
+    if (selectedTournament) {
+      const token = localStorage.getItem('adminToken');
+      try {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${selectedTournament._id}`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(updatedFormData),
+        });
+        fetchTournaments();
+      } catch (error) {
+        console.error("Error auto-saving on remove:", error);
+      }
+    }
   };
 
   useEffect(() => {
@@ -329,11 +375,21 @@ const Tournaments = () => {
         });
         setModalOpen(true);
       } else {
-        const errorData = await response.json();
-        console.error("Server validation error:", errorData);
+        // Handle non-JSON error responses (like 413 Payload Too Large HTML)
+        const contentType = response.headers.get("content-type");
+        let errorMessage = 'Failed to save tournament';
+
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } else if (response.status === 413) {
+          errorMessage = 'The data is too large to save (images might be too big).';
+        }
+
+        console.error("Server error:", errorMessage);
         setModalContent({
             title: 'Error',
-            message: errorData.message || 'Failed to save tournament',
+            message: errorMessage,
             onConfirm: null
         });
         setModalOpen(true);
