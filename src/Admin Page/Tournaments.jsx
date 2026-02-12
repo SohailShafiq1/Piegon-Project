@@ -37,20 +37,21 @@ const Tournaments = () => {
   const [showParticipantForm, setShowParticipantForm] = useState(false);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
 
-  const calculateTotalTime = (startTime, pigeonTimes) => {
+  const calculateTotalTime = (startTime, pigeonTimes, helperCount = 0) => {
     let totalMinutes = 0;
     if (!startTime) return '00:00:00';
     
     const [startH, startM] = startTime.split(':').map(Number);
     const startTotalMinutes = startH * 60 + startM;
 
-    (pigeonTimes || []).forEach(time => {
+    (pigeonTimes || []).forEach((time, index) => {
+      // Skip the first 'helperCount' pigeons as specified by the user
+      if (index < helperCount) return;
+
       if (time) {
         const [landH, landM] = time.split(':').map(Number);
         const landTotalMinutes = landH * 60 + landM;
         const diff = landTotalMinutes - startTotalMinutes;
-        // In pigeon racing, if it lands before start it's 0, but usually it's next day? 
-        // For now, simple diff.
         if (diff > 0) totalMinutes += diff;
       }
     });
@@ -67,10 +68,11 @@ const Tournaments = () => {
     }
     updatedParticipants[participantIndex].pigeonTimes[pigeonIndex] = value;
     
-    // Recalculate total time
+    // Recalculate total time, skipping helper pigeons
     updatedParticipants[participantIndex].totalTime = calculateTotalTime(
       formData.startTime, 
-      updatedParticipants[participantIndex].pigeonTimes
+      updatedParticipants[participantIndex].pigeonTimes,
+      formData.helperPigeons || 0
     );
 
     setFormData({ ...formData, participants: updatedParticipants });
@@ -309,7 +311,10 @@ const Tournaments = () => {
                 <th>Name</th>
                 <th>Start Time</th>
                 {[...Array(totalPigeonsCount)].map((_, i) => (
-                  <th key={i}>pigeon {i + 1}</th>
+                  <th key={i} className={i < (formData.helperPigeons || 0) ? 'helper-header' : ''}>
+                    pigeon {i + 1}
+                    {i < (formData.helperPigeons || 0) && <div className="helper-badge">Helper</div>}
+                  </th>
                 ))}
                 <th>Total</th>
               </tr>
@@ -326,16 +331,20 @@ const Tournaments = () => {
                       </div>
                     </td>
                     <td className="start-time-cell">{formData.startTime}</td>
-                    {[...Array(totalPigeonsCount)].map((_, i) => (
-                      <td key={i} className="time-input-cell">
-                        <input 
-                          type="time" 
-                          step="1"
-                          value={p.pigeonTimes && p.pigeonTimes[i] ? p.pigeonTimes[i] : ''}
-                          onChange={(e) => handleTimeChange(pIndex, i, e.target.value)}
-                        />
-                      </td>
-                    ))}
+                    {[...Array(totalPigeonsCount)].map((_, i) => {
+                      const isHelper = i < (formData.helperPigeons || 0);
+                      return (
+                        <td key={i} className={`time-input-cell ${isHelper ? 'helper-pigeon-cell' : ''}`}>
+                          <input 
+                            type="time" 
+                            step="1"
+                            value={p.pigeonTimes && p.pigeonTimes[i] ? p.pigeonTimes[i] : ''}
+                            onChange={(e) => handleTimeChange(pIndex, i, e.target.value)}
+                            title={isHelper ? 'Helper Pigeon (Not counted in total)' : ''}
+                          />
+                        </td>
+                      );
+                    })}
                     <td className="total-time-cell">{p.totalTime || '00:00:00'}</td>
                   </tr>
                 ))
