@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Banner from './components/Banner';
@@ -12,18 +12,55 @@ import AdminLogin from './Admin Page/AdminLogin';
 import ManageAdmins from './Admin Page/ManageAdmins';
 import './App.css';
 
-function Home({ activeDate, setActiveDate }) {
+function Home() {
+  const [tournaments, setTournaments] = useState([]);
+  const [activeTournament, setActiveTournament] = useState(null);
+  const [activeDateIndex, setActiveDateIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTournaments = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`);
+        const data = await response.json();
+        setTournaments(data);
+        if (data.length > 0) {
+          // Find the most recent active tournament or just the first one
+          const active = data.find(t => t.status === 'Active') || data[0];
+          setActiveTournament(active);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching tournaments:", error);
+        setLoading(false);
+      }
+    };
+    fetchTournaments();
+  }, []);
+
+  if (loading) return <div className="loading-screen">Loading Tournament...</div>;
+  if (!activeTournament) return <div className="no-tournaments">No active tournaments found.</div>;
+
+  const flyingDates = activeTournament.flyingDates || [];
+
   return (
     <>
       <Banner />
       <Navbar />
       <div className="main-content">
         <div className="announcement">
-          کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز
+          {activeTournament.name} - کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز
         </div>
-        <StatsBar />
-        <DateTabs activeDate={activeDate} onDateChange={setActiveDate} />
-        <Leaderboard />
+        <StatsBar tournament={activeTournament} />
+        <DateTabs 
+          dates={flyingDates} 
+          activeDateIndex={activeDateIndex} 
+          onDateChange={setActiveDateIndex} 
+        />
+        <Leaderboard 
+          tournament={activeTournament} 
+          dateIndex={activeDateIndex} 
+        />
       </div>
     </>
   );
@@ -50,13 +87,11 @@ const DashboardHome = () => (
 );
 
 function App() {
-  const [activeDate, setActiveDate] = useState('2025-10-07');
-
   return (
     <Router>
       <div className="app-container">
         <Routes>
-          <Route path="/" element={<Home activeDate={activeDate} setActiveDate={setActiveDate} />} />
+          <Route path="/" element={<Home />} />
           <Route path="/contact" element={
             <>
               <Banner />

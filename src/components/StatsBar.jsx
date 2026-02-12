@@ -1,21 +1,33 @@
 import React from 'react';
 import '../styles/StatsBar.css';
-import { stats } from '../data/mockData';
 
-const StatsBar = () => {
+const StatsBar = ({ tournament }) => {
+  if (!tournament) return null;
+
+  const lofts = tournament.participants?.length || 0;
+  const numPigeons = tournament.numPigeons || 0;
+  const helperPigeons = tournament.helperPigeons || 0;
+  const totalPigeonsPerDay = numPigeons + helperPigeons;
+  const totalPigeons = lofts * totalPigeonsPerDay;
+
+  // Calculate pigeons landed across all participants
+  const landedCount = (tournament.participants || []).reduce((acc, p) => {
+    return acc + (p.pigeonTimes || []).filter(t => t && t !== '').length;
+  }, 0);
+
   return (
     <div className="stats-container">
-      <h2 className="title-urdu">الخاکى پیجن ٹورنامنٹ پیروشاہ 5روزہ</h2>
-      <p className="start-time">Start time : 06:00:00</p>
+      <h2 className="title-urdu">{tournament.name}</h2>
+      <p className="start-time">Start time : {tournament.startTime}</p>
       
       <div className="stats-box">
         <div className="stats-row">
-          Lofts: {stats.lofts}, Total pigeons: {stats.totalPigeons}, Pigeons landed: {stats.pigeonsLanded}, Pigeons remaining: {stats.pigeonsRemaining}
+          Lofts: {lofts}, Total pigeons: {totalPigeons}, Pigeons landed: {landedCount}, Pigeons remaining: {totalPigeons - landedCount}
         </div>
       </div>
 
       <div className="last-winner">
-        لاسٹ ونر : {stats.lastWinner}
+        لاسٹ ونر : {tournament.lastWinner || 'N/A'}
       </div>
     </div>
   );

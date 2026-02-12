@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaTrophy, FaUserShield, FaArrowLeft, FaSave, FaTrash, FaImage, FaCalendarAlt, FaClock, FaDove, FaUserPlus, FaUserFriends } from 'react-icons/fa';
+import { FaPlus, FaTrophy, FaUserShield, FaArrowLeft, FaSave, FaTrash, FaImage, FaCalendarAlt, FaClock, FaDove, FaUserPlus, FaUserFriends, FaEdit, FaUsers, FaMapMarkerAlt, FaPhone } from 'react-icons/fa';
 import Modal from '../components/Modal';
 import '../styles/Modal.css';
 import './Tournaments.css';
+import { calculateTotalTime, calculateGrandTotal, calculateWinners } from '../utils/calculations';
 
 const Tournaments = () => {
   const [tournaments, setTournaments] = useState([]);
@@ -38,96 +39,7 @@ const Tournaments = () => {
   const [newParticipant, setNewParticipant] = useState({ name: '', image: '', address: '', phone: '' });
   const [showParticipantForm, setShowParticipantForm] = useState(false);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
-
-  const calculateTotalTime = (startTime, pigeonTimes, scoringCount = 0) => {
-    const effectiveStartTime = startTime || '06:00';
-    
-    const getSeconds = (timeStr) => {
-      if (!timeStr) return 0;
-      const parts = timeStr.split(':').map(Number);
-      const h = parts[0] || 0;
-      const m = parts[1] || 0;
-      const s = parts[2] || 0;
-      return h * 3600 + m * 60 + s;
-    };
-
-    const startSeconds = getSeconds(effectiveStartTime);
-    let totalSeconds = 0;
-
-    // Filter only non-empty times entered
-    const enteredTimes = (pigeonTimes || []).filter(t => t && t !== '');
-    const k = enteredTimes.length;
-    
-    // Dynamic sliding logic: Skip some from the start only if entered more than scoringCount
-    // SkipCount = Max(0, Entered - Scoring)
-    const skip = Math.max(0, k - scoringCount);
-    
-    // Take exactly the sliding window of scoring pigeons
-    const scoringEntries = enteredTimes.slice(skip);
-
-    scoringEntries.forEach((time) => {
-      let landSeconds = getSeconds(time);
-      if (landSeconds < startSeconds) {
-        landSeconds += 24 * 3600;
-      }
-      const diff = landSeconds - startSeconds;
-      if (diff > 0) totalSeconds += diff;
-    });
-
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-    
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
-
-  const calculateWinners = (participants, startTime) => {
-    let latestFirstElapsed = -1;
-    let firstWinnerName = "";
-    
-    let latestLastElapsed = -1;
-    let lastWinnerName = "";
-
-    const getSeconds = (timeStr) => {
-      if (!timeStr) return 0;
-      const parts = timeStr.split(':').map(Number);
-      const h = parts[0] || 0;
-      const m = parts[1] || 0;
-      const s = parts[2] || 0;
-      return h * 3600 + m * 60 + s;
-    };
-
-    const startSeconds = getSeconds(startTime || '06:00');
-
-    (participants || []).forEach(p => {
-      // Get ALL entered times including helpers
-      const enteredTimes = (p.pigeonTimes || []).filter(t => t && t !== '');
-      
-      if (enteredTimes.length > 0) {
-        // 1. FIRST WINNER: Person whose absolute P1 (index 0) came LATEST
-        let firstLandSeconds = getSeconds(enteredTimes[0]);
-        if (firstLandSeconds < startSeconds) firstLandSeconds += 24 * 3600;
-        const firstElapsed = firstLandSeconds - startSeconds;
-        
-        if (firstElapsed > latestFirstElapsed) {
-          latestFirstElapsed = firstElapsed;
-          firstWinnerName = p.name;
-        }
-
-        // 2. LAST WINNER: Person whose absolute LAST recorded pigeon came LATEST
-        let lastLandSeconds = getSeconds(enteredTimes[enteredTimes.length - 1]);
-        if (lastLandSeconds < startSeconds) lastLandSeconds += 24 * 3600;
-        const lastElapsed = lastLandSeconds - startSeconds;
-
-        if (lastElapsed > latestLastElapsed) {
-          latestLastElapsed = lastElapsed;
-          lastWinnerName = p.name;
-        }
-      }
-    });
-
-    return { firstWinner: firstWinnerName, lastWinner: lastWinnerName };
-  };
+  const [activeDateIndex, setActiveDateIndex] = useState(0); // 0 to numDays-1, or 'total'
 
   const handleTimeChange = (participantIndex, pigeonIndex, value) => {
     // deep copy the participants array and the specific participant object to avoid mutation
@@ -140,10 +52,12 @@ const Tournaments = () => {
     // Set the new time
     updatedParticipant.pigeonTimes[pigeonIndex] = value;
     
-    // Recalculate total time with sliding window logic
-    updatedParticipant.totalTime = calculateTotalTime(
-      formData.startTime, 
+    // Recalculate grand total time
+    updatedParticipant.totalTime = calculateGrandTotal(
       updatedParticipant.pigeonTimes,
+      (formData.numPigeons || 0) + (formData.helperPigeons || 0),
+      formData.startTime,
+      formData.numDays || 1,
       formData.numPigeons || 0
     );
 
@@ -365,21 +279,32 @@ const Tournaments = () => {
         flyingDates.push(nextDate);
     }
 
-    const totalPigeons = (formData.numPigeons || 0) + (formData.helperPigeons || 0);
+    const totalPigeonsPerDay = (formData.numPigeons || 0) + (formData.helperPigeons || 0);
     const updatedParticipants = (formData.participants || []).map(p => ({
         ...p,
-        totalTime: calculateTotalTime(formData.startTime, p.pigeonTimes, formData.numPigeons || 0)
+        totalTime: calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, formData.numPigeons || 0)
     }));
 
     // Recalculate winners one last time before saving
     const { firstWinner, lastWinner } = calculateWinners(updatedParticipants, formData.startTime);
+
+    // Calculate daily winners for each date
+    const dailyWinners = flyingDates.map((date, idx) => {
+      const winners = calculateWinners(updatedParticipants, formData.startTime, idx, totalPigeonsPerDay);
+      return {
+        date,
+        firstWinner: winners.firstWinner,
+        lastWinner: winners.lastWinner
+      };
+    });
 
     const tournamentToSave = {
         ...formData,
         participants: updatedParticipants,
         firstWinner,
         lastWinner,
-        totalPigeons,
+        dailyWinners,
+        totalPigeons: totalPigeonsPerDay,
         flyingDates
     };
 
@@ -485,7 +410,8 @@ const Tournaments = () => {
 
   const renderView = () => {
     if (view === 'time-entry') {
-      const totalPigeonsCount = (formData.numPigeons || 0) + (formData.helperPigeons || 0);
+      const totalPigeonsPerDay = (formData.numPigeons || 0) + (formData.helperPigeons || 0);
+      const flyingDates = formData.flyingDates || [];
   
       return (
         <div className="time-entry-view">
@@ -502,22 +428,49 @@ const Tournaments = () => {
             </button>
           </div>
 
-          {(formData.firstWinner || formData.lastWinner) && (
-            <div className="winners-snapshot">
-              {formData.firstWinner && (
-                <div className="winner-badge first">
-                  <span className="label">First Winner:</span>
-                  <span className="name">{formData.firstWinner}</span>
-                </div>
-              )}
-              {formData.lastWinner && (
-                <div className="winner-badge last">
-                  <span className="label">Last Winner:</span>
-                  <span className="name">{formData.lastWinner}</span>
-                </div>
-              )}
-            </div>
-          )}
+          <div className="date-tabs-container">
+            {flyingDates.map((date, idx) => (
+              <button 
+                key={idx} 
+                className={`date-tab ${activeDateIndex === idx ? 'active' : ''}`}
+                onClick={() => setActiveDateIndex(idx)}
+              >
+                {new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+              </button>
+            ))}
+            <button 
+              className={`date-tab total-tab ${activeDateIndex === 'total' ? 'active' : ''}`}
+              onClick={() => setActiveDateIndex('total')}
+            >
+              Tournament Summary
+            </button>
+          </div>
+
+          {(() => {
+            const winners = calculateWinners(formData.participants, formData.startTime, activeDateIndex, totalPigeonsPerDay);
+            if (!winners.firstWinner && !winners.lastWinner) return null;
+
+            return (
+              <div className="winners-snapshot">
+                {winners.firstWinner && (
+                  <div className="winner-badge first">
+                    <span className="label">
+                      {activeDateIndex === 'total' ? 'Overall First Winner:' : `Day ${activeDateIndex + 1} First Winner:`}
+                    </span>
+                    <span className="name">{winners.firstWinner}</span>
+                  </div>
+                )}
+                {winners.lastWinner && (
+                  <div className="winner-badge last">
+                    <span className="label">
+                      {activeDateIndex === 'total' ? 'Overall Last Winner:' : `Day ${activeDateIndex + 1} Last Winner:`}
+                    </span>
+                    <span className="name">{winners.lastWinner}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
   
           <div className="table-responsive">
             <table className="time-table">
@@ -525,13 +478,19 @@ const Tournaments = () => {
                 <tr>
                   <th>Sr.</th>
                   <th>Name</th>
-                  <th>Start Time</th>
-                  {[...Array(totalPigeonsCount)].map((_, i) => (
-                    <th key={i} className={i < (formData.helperPigeons || 0) ? 'helper-header' : ''}>
-                      pigeon {i + 1}
-                      {i < (formData.helperPigeons || 0) && <div className="helper-badge">Helper</div>}
-                    </th>
-                  ))}
+                  {activeDateIndex !== 'total' && <th>Start Time</th>}
+                  {activeDateIndex === 'total' ? (
+                    flyingDates.map((date, idx) => (
+                      <th key={idx}>{new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</th>
+                    ))
+                  ) : (
+                    [...Array(totalPigeonsPerDay)].map((_, i) => (
+                      <th key={i} className={i < (formData.helperPigeons || 0) ? 'helper-header' : ''}>
+                        pigeon {i + 1}
+                        {i < (formData.helperPigeons || 0) && <div className="helper-badge">Helper</div>}
+                      </th>
+                    ))
+                  )}
                   <th>Total</th>
                 </tr>
               </thead>
@@ -546,31 +505,56 @@ const Tournaments = () => {
                           <span className="p-name-table">{p.name}</span>
                         </div>
                       </td>
-                      <td className="start-time-cell">{formData.startTime}</td>
-                      {[...Array(totalPigeonsCount)].map((_, i) => {
-                        const isHelper = i < (formData.helperPigeons || 0);
-                        return (
-                          <td key={i} className={`time-input-cell ${isHelper ? 'helper-pigeon-cell' : ''}`}>
-                            <input 
-                              type="time" 
-                              step="1"
-                              value={p.pigeonTimes && p.pigeonTimes[i] ? p.pigeonTimes[i] : ''}
-                              onChange={(e) => {
-                                handleTimeChange(pIndex, i, e.target.value);
-                              }}
-                              title={isHelper ? 'Helper Pigeon (Not counted in total)' : ''}
-                            />
+                      
+                      {activeDateIndex !== 'total' ? (
+                        <>
+                          <td className="start-time-cell">{formData.startTime}</td>
+                          {[...Array(totalPigeonsPerDay)].map((_, i) => {
+                            const isHelper = i < (formData.helperPigeons || 0);
+                            const globalPigeonIdx = (activeDateIndex * totalPigeonsPerDay) + i;
+                            return (
+                              <td key={i} className={`time-input-cell ${isHelper ? 'helper-pigeon-cell' : ''}`}>
+                                <input 
+                                  type="time" 
+                                  step="1"
+                                  value={p.pigeonTimes && p.pigeonTimes[globalPigeonIdx] ? p.pigeonTimes[globalPigeonIdx] : ''}
+                                  onChange={(e) => {
+                                    handleTimeChange(pIndex, globalPigeonIdx, e.target.value);
+                                  }}
+                                  title={isHelper ? 'Helper Pigeon (Not counted in total)' : ''}
+                                />
+                              </td>
+                            );
+                          })}
+                          <td className="total-time-cell">
+                            {calculateTotalTime(
+                              formData.startTime, 
+                              (p.pigeonTimes || []).slice(activeDateIndex * totalPigeonsPerDay, (activeDateIndex + 1) * totalPigeonsPerDay), 
+                              formData.numPigeons || 0
+                            )}
                           </td>
-                        );
-                      })}
-                      <td className="total-time-cell">
-                        {calculateTotalTime(formData.startTime, p.pigeonTimes, formData.numPigeons || 0)}
-                      </td>
+                        </>
+                      ) : (
+                        <>
+                          {flyingDates.map((_, idx) => (
+                            <td key={idx} className="daily-total-cell">
+                              {calculateTotalTime(
+                                formData.startTime, 
+                                (p.pigeonTimes || []).slice(idx * totalPigeonsPerDay, (idx + 1) * totalPigeonsPerDay), 
+                                formData.numPigeons || 0
+                                )}
+                            </td>
+                          ))}
+                          <td className="grand-total-cell">
+                            {calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, formData.numPigeons || 0)}
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={totalPigeonsCount + 4} className="no-data">
+                    <td colSpan={totalPigeonsPerDay + 4} className="no-data">
                       No participants added yet.
                     </td>
                   </tr>
