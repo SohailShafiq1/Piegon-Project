@@ -8,9 +8,11 @@ const Tournaments = () => {
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const currentUser = JSON.parse(localStorage.getItem('adminUser'));
+
   const initialFormState = {
     name: '',
-    admin: 'Super Admin',
+    admin: currentUser?.id || '',
     startDate: new Date().toISOString().split('T')[0],
     numDays: 1,
     numPigeons: 0,
@@ -25,12 +27,19 @@ const Tournaments = () => {
 
   useEffect(() => {
     fetchTournaments();
-    fetchAdmins();
+    if (currentUser?.role === 'Super Admin') {
+      fetchAdmins();
+    }
   }, []);
 
   const fetchTournaments = async () => {
+    const token = localStorage.getItem('adminToken');
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const data = await response.json();
       setTournaments(data);
       setLoading(false);
@@ -68,6 +77,7 @@ const Tournaments = () => {
     setFormData({
       ...initialFormState,
       ...t,
+      admin: t.admin?._id || t.admin,
       startDate: t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       posters: t.posters || []
     });
@@ -152,17 +162,21 @@ const Tournaments = () => {
               />
             </div>
 
-              <div className="form-group">
-                <label>Tournament Admin</label>
-                <select 
-                  value={formData.admin}
-                  onChange={(e) => setFormData({...formData, admin: e.target.value})}
-                >
-                  {(admins || []).map(admin => (
-                    <option key={admin.id || admin._id} value={admin.name}>{admin.name}</option>
-                  ))}
-                </select>
-              </div>
+              {currentUser?.role === 'Super Admin' && (
+                <div className="form-group">
+                  <label>Assign to Admin</label>
+                  <select 
+                    value={formData.admin}
+                    onChange={(e) => setFormData({...formData, admin: e.target.value})}
+                    required
+                  >
+                    <option value="">Select an Admin</option>
+                    {(admins || []).map(admin => (
+                      <option key={admin._id} value={admin._id}>{admin.name} ({admin.role})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
             <div className="form-group">
               <label>Start Date</label>
@@ -306,7 +320,7 @@ const Tournaments = () => {
                 <div className="card-info">
                   <h3>{t.name}</h3>
                   <div className="card-meta">
-                    <span><FaUserShield /> {t.admin}</span>
+                    <span><FaUserShield /> {t.admin?.name || 'Unassigned'}</span>
                     <span>Days: {t.numDays}</span>
                   </div>
                 </div>

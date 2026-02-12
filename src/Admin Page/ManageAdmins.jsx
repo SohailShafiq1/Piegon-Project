@@ -119,26 +119,32 @@ const ManageAdmins = () => {
 
       <div className="admin-list-card">
         <h4>Existing Admins</h4>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Created At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {admins.map(admin => (
-              <tr key={admin._id}>
-                <td>{admin.name}</td>
-                <td>{admin.email || 'N/A'}</td>
-                <td>{admin.role}</td>
-                <td>{new Date(admin.createdAt).toLocaleDateString()}</td>
+        <div className="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Created At</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {admins.map(admin => (
+                <tr key={admin._id}>
+                  <td>{admin.name}</td>
+                  <td>{admin.email || 'N/A'}</td>
+                  <td>
+                    <span className={`role-badge ${admin.role === 'Super Admin' ? 'super' : 'admin'}`}>
+                      {admin.role}
+                    </span>
+                  </td>
+                  <td>{new Date(admin.createdAt).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
