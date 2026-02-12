@@ -41,22 +41,22 @@ const Leaderboard = ({ tournament, dateIndex }) => {
 
   return (
     <div className="leaderboard-container">
-      {winners.firstWinner || winners.lastWinner ? (
+      {(winners.firstWinner || winners.lastWinner) && (
         <div className="winners-banner">
           {winners.firstWinner && (
             <div className="winner-tag first">
-              <span className="label">{dateIndex === 'total' ? 'Overall First Winner' : `Day ${dateIndex + 1} First Winner`}:</span>
+              <span className="label">{dateIndex === 'total' ? 'Overall First Winner' : `Day ${dateIndex + 1} First Winner`}</span>
               <span className="name">{winners.firstWinner}</span>
             </div>
           )}
           {winners.lastWinner && (
             <div className="winner-tag last">
-              <span className="label">{dateIndex === 'total' ? 'Overall Last Winner' : `Day ${dateIndex + 1} Last Winner`}:</span>
+              <span className="label">{dateIndex === 'total' ? 'Overall Last Winner' : `Day ${dateIndex + 1} Last Winner`}</span>
               <span className="name">{winners.lastWinner}</span>
             </div>
           )}
         </div>
-      ) : null}
+      )}
 
       <div className="table-responsive">
         <table className="leaderboard-table">

@@ -1,17 +1,17 @@
 .date-tabs-container {
   display: flex;
   justify-content: center;
-  padding: 5px; /* Reduced padding */
-  background-color: #fff; /* White background */
+  padding: 2px 0; /* Minimal padding */
+  background-color: #fff;
+  margin-bottom: 5px;
 }
 
 .date-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 0; /* No gap between boxes */
+  gap: 0;
   border: 1px solid #004a99;
   border-radius: 4px;
-  overflow: hidden;
 }
 
 .date-tab {

@@ -16,15 +16,15 @@ body {
 .main-content {
   flex: 1;
   width: 100%;
-  max-width: 100%; /* Ensure it fits on mobile */
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 5px; /* Minimal side padding */
+  padding: 0 2px; /* Even less padding */
 }
 
 .announcement {
   text-align: center;
-  padding: 5px; /* Compact padding */
-  font-size: 0.9rem; /* Smaller font */
+  padding: 2px; /* Very tight */
+  font-size: 0.85rem;
   font-weight: bold;
   color: #333;
 }
