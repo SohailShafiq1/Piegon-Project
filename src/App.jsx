@@ -26,6 +26,22 @@ function Home() {
           // Find the most recent active tournament
           const active = data.find(t => t.status === 'Active') || data[0];
           setActiveTournament(active);
+
+          // Default to the last date that has entered data
+          const pigeonsPerDay = (active.numPigeons || 0) + (active.helperPigeons || 0);
+          const numDays = active.flyingDates?.length || 0;
+          let lastActiveIdx = 0;
+          for (let d = numDays - 1; d >= 0; d--) {
+            const hasData = (active.participants || []).some(p => {
+              const dayTimes = (p.pigeonTimes || []).slice(d * pigeonsPerDay, (d + 1) * pigeonsPerDay);
+              return dayTimes.some(t => t && t.trim() !== '');
+            });
+            if (hasData) {
+              lastActiveIdx = d;
+              break;
+            }
+          }
+          setActiveDateIndex(lastActiveIdx);
         }
         setLoading(false);
       } catch (error) {
@@ -84,13 +100,30 @@ function TournamentView() {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${id}`);
         const data = await response.json();
         setTournament(data);
+
+        // Default to the last date that has entered data
+        const pigeonsPerDay = (data.numPigeons || 0) + (data.helperPigeons || 0);
+        const numDays = data.flyingDates?.length || 0;
+        let lastActiveIdx = 0;
+        for (let d = numDays - 1; d >= 0; d--) {
+          const hasData = (data.participants || []).some(p => {
+            const dayTimes = (p.pigeonTimes || []).slice(d * pigeonsPerDay, (d + 1) * pigeonsPerDay);
+            return dayTimes.some(t => t && t.trim() !== '');
+          });
+          if (hasData) {
+            lastActiveIdx = d;
+            break;
+          }
+        }
+        setActiveDateIndex(lastActiveIdx);
+
         setLoading(false);
       } catch (error) {
         console.error("Error fetching tournament:", error);
         setLoading(false);
       }
     };
-    fetchTournament(id);
+    fetchTournament();
   }, [id]);
 
   if (loading) return <div className="loading-screen">Loading Tournament Data...</div>;
