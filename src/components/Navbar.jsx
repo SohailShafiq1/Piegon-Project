@@ -1,26 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Navbar.css';
 
 const Navbar = () => {
-  const navLinks = [
-    "شیران دا دنگل پیجن کلب ٹونیاں",
-    "پاک اتحاد کلب ڈھینڈہ شریف",
-    "جلالپور جٹاں پیجن کلب",
-    "تحصیل لیول کلب",
-    "لالہ افضل میموریل پیجن کلب جیندڑ کلاں",
-    "سائیں پیجن کلب نگڑیاں",
-    "لالہ افضل میموریل پیجن کلب جیندڑ کلاں - 2"
-  ];
+  const [tournaments, setTournaments] = useState([]);
+
+  useEffect(() => {
+    const fetchTournaments = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`);
+        const data = await response.json();
+        // Only show tournaments intended for public view
+        setTournaments(data.filter(t => t.showOnHome !== false));
+      } catch (error) {
+        console.error("Error fetching tournaments for navbar:", error);
+      }
+    };
+    fetchTournaments();
+  }, []);
 
   return (
     <nav className="navbar">
       <div className="nav-container">
         <Link to="/" className="nav-brand">karianwalapigeon</Link>
         <ul className="nav-links">
-          {navLinks.map((link, index) => (
-            <li key={index}><a href="#">{link}</a></li>
-          ))}
+          {tournaments.length > 0 ? (
+            tournaments.map((t) => (
+              <li key={t._id}>
+                <Link to={`/tournament/${t._id}`}>{t.name}</Link>
+              </li>
+            ))
+          ) : (
+            <li><span className="no-tournaments-nav">No Active Clubs</span></li>
+          )}
           <li>
             <Link to="/contact" className="contact-nav-button">Contact</Link>
           </li>

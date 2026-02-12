@@ -15,10 +15,16 @@ const StatsBar = ({ tournament }) => {
     return acc + (p.pigeonTimes || []).filter(t => t && t !== '').length;
   }, 0);
 
+  const formatDisplayTime = (timeStr) => {
+    if (!timeStr) return '-';
+    const parts = timeStr.split(':');
+    return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeStr;
+  };
+
   return (
     <div className="stats-container">
       <h2 className="title-urdu">{tournament.name}</h2>
-      <p className="start-time">Start time : {tournament.startTime}</p>
+      <p className="start-time">Start time : {formatDisplayTime(tournament.startTime)}</p>
       
       <div className="stats-box">
         <div className="stats-row">

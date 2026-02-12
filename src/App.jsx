@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useParams } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Banner from './components/Banner';
 import StatsBar from './components/StatsBar';
@@ -13,7 +13,6 @@ import ManageAdmins from './Admin Page/ManageAdmins';
 import './App.css';
 
 function Home() {
-  const [tournaments, setTournaments] = useState([]);
   const [activeTournament, setActiveTournament] = useState(null);
   const [activeDateIndex, setActiveDateIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -23,9 +22,8 @@ function Home() {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`);
         const data = await response.json();
-        setTournaments(data);
         if (data.length > 0) {
-          // Find the most recent active tournament or just the first one
+          // Find the most recent active tournament
           const active = data.find(t => t.status === 'Active') || data[0];
           setActiveTournament(active);
         }
@@ -38,8 +36,16 @@ function Home() {
     fetchTournaments();
   }, []);
 
-  if (loading) return <div className="loading-screen">Loading Tournament...</div>;
-  if (!activeTournament) return <div className="no-tournaments">No active tournaments found.</div>;
+  if (loading) return <div className="loading-screen">Loading...</div>;
+  if (!activeTournament) return (
+    <>
+      <Banner />
+      <Navbar />
+      <div className="main-content">
+        <div className="no-tournaments">No active tournaments found. Create one in the Admin panel.</div>
+      </div>
+    </>
+  );
 
   const flyingDates = activeTournament.flyingDates || [];
 
@@ -59,6 +65,55 @@ function Home() {
         />
         <Leaderboard 
           tournament={activeTournament} 
+          dateIndex={activeDateIndex} 
+        />
+      </div>
+    </>
+  );
+}
+
+function TournamentView() {
+  const { id } = useParams();
+  const [tournament, setTournament] = useState(null);
+  const [activeDateIndex, setActiveDateIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTournament = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${id}`);
+        const data = await response.json();
+        setTournament(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching tournament:", error);
+        setLoading(false);
+      }
+    };
+    fetchTournament(id);
+  }, [id]);
+
+  if (loading) return <div className="loading-screen">Loading Tournament Data...</div>;
+  if (!tournament) return <div>Tournament not found</div>;
+
+  const flyingDates = tournament.flyingDates || [];
+
+  return (
+    <>
+      <Banner />
+      <Navbar />
+      <div className="main-content">
+        <div className="announcement">
+          {tournament.name} - کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز
+        </div>
+        <StatsBar tournament={tournament} />
+        <DateTabs 
+          dates={flyingDates} 
+          activeDateIndex={activeDateIndex} 
+          onDateChange={setActiveDateIndex} 
+        />
+        <Leaderboard 
+          tournament={tournament} 
           dateIndex={activeDateIndex} 
         />
       </div>
@@ -92,6 +147,7 @@ function App() {
       <div className="app-container">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/tournament/:id" element={<TournamentView />} />
           <Route path="/contact" element={
             <>
               <Banner />

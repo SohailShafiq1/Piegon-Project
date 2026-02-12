@@ -1,6 +1,12 @@
 import React from 'react';
 import '../styles/Leaderboard.css';
-import { calculateTotalTime, calculateGrandTotal, calculateWinners } from '../utils/calculations';
+import { 
+  calculateTotalTime, 
+  calculateGrandTotal, 
+  calculateWinners, 
+  calculateTotalSeconds, 
+  calculateGrandTotalSeconds 
+} from '../utils/calculations';
 
 const Leaderboard = ({ tournament, dateIndex }) => {
   if (!tournament) return null;
@@ -8,20 +14,27 @@ const Leaderboard = ({ tournament, dateIndex }) => {
   const { participants = [], startTime, numPigeons, helperPigeons, numDays } = tournament;
   const pigeonsPerDay = (numPigeons || 0) + (helperPigeons || 0);
 
-  // Sorting: If total view, sort by Grand Total. If day view, sort by Daily Total.
+  // Helper to strip seconds from HH:MM:SS strings
+  const formatDisplayTime = (timeStr) => {
+    if (!timeStr || timeStr === '-') return '-';
+    const parts = timeStr.split(':');
+    return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeStr;
+  };
+
+  // Sorting: If total view, sort by Grand Total Seconds. If day view, sort by Daily Total Seconds.
   const sortedParticipants = [...participants].sort((a, b) => {
-    let aTime, bTime;
+    let aSecs, bSecs;
     if (dateIndex === 'total') {
-      aTime = calculateGrandTotal(a.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons);
-      bTime = calculateGrandTotal(b.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons);
+      aSecs = calculateGrandTotalSeconds(a.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons);
+      bSecs = calculateGrandTotalSeconds(b.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons);
     } else {
       const aDayTimes = (a.pigeonTimes || []).slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay);
       const bDayTimes = (b.pigeonTimes || []).slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay);
-      aTime = calculateTotalTime(startTime, aDayTimes, numPigeons);
-      bTime = calculateTotalTime(startTime, bDayTimes, numPigeons);
+      aSecs = calculateTotalSeconds(startTime, aDayTimes, numPigeons);
+      bSecs = calculateTotalSeconds(startTime, bDayTimes, numPigeons);
     }
     // Sort descending (longer time is better)
-    return bTime.localeCompare(aTime);
+    return bSecs - aSecs;
   });
 
   const winners = calculateWinners(participants, startTime, dateIndex, pigeonsPerDay);
@@ -74,11 +87,11 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                      <span>{p.name}</span>
                    </div>
                 </td>
-                {dateIndex !== 'total' && <td>{startTime}</td>}
+                {dateIndex !== 'total' && <td>{formatDisplayTime(startTime)}</td>}
                 {dateIndex !== 'total' ? (
                   [...Array(pigeonsPerDay)].map((_, pIdx) => {
                     const time = p.pigeonTimes[dateIndex * pigeonsPerDay + pIdx];
-                    return <td key={pIdx}>{time || '-'}</td>;
+                    return <td key={pIdx}>{formatDisplayTime(time)}</td>;
                   })
                 ) : (
                   tournament.flyingDates.map((_, dIdx) => (

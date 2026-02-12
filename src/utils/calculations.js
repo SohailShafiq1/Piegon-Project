@@ -1,15 +1,25 @@
-export const calculateTotalTime = (startTime, pigeonTimes, scoringCount = 0) => {
-    const effectiveStartTime = startTime || '06:00';
-    
-    const getSeconds = (timeStr) => {
-      if (!timeStr) return 0;
-      const parts = timeStr.split(':').map(Number);
-      const h = parts[0] || 0;
-      const m = parts[1] || 0;
-      const s = parts[2] || 0;
-      return h * 3600 + m * 60 + s;
-    };
+export const getSeconds = (timeStr) => {
+  if (!timeStr) return 0;
+  const parts = timeStr.split(':').map(Number);
+  const h = parts[0] || 0;
+  const m = parts[1] || 0;
+  const s = parts[2] || 0;
+  return h * 3600 + m * 60 + s;
+};
 
+export const formatTime = (totalSeconds, showSeconds = false) => {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  
+  if (showSeconds) {
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+};
+
+export const calculateTotalSeconds = (startTime, pigeonTimes, scoringCount = 0) => {
+    const effectiveStartTime = startTime || '06:00';
     const startSeconds = getSeconds(effectiveStartTime);
     let totalSeconds = 0;
 
@@ -27,29 +37,26 @@ export const calculateTotalTime = (startTime, pigeonTimes, scoringCount = 0) => 
       if (diff > 0) totalSeconds += diff;
     });
 
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-    
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return totalSeconds;
+};
+
+export const calculateTotalTime = (startTime, pigeonTimes, scoringCount = 0) => {
+    const totalSeconds = calculateTotalSeconds(startTime, pigeonTimes, scoringCount);
+    return formatTime(totalSeconds, false);
+};
+
+export const calculateGrandTotalSeconds = (pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons) => {
+    let totalSeconds = 0;
+    for (let d = 0; d < numDays; d++) {
+      const dayTimes = (pigeonTimes || []).slice(d * pigeonsPerDay, (d + 1) * pigeonsPerDay);
+      totalSeconds += calculateTotalSeconds(startTime, dayTimes, scoringPigeons);
+    }
+    return totalSeconds;
 };
 
 export const calculateGrandTotal = (pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons) => {
-    let totalSeconds = 0;
-
-    for (let d = 0; d < numDays; d++) {
-      const dayTimes = (pigeonTimes || []).slice(d * pigeonsPerDay, (d + 1) * pigeonsPerDay);
-      const dayTotalStr = calculateTotalTime(startTime, dayTimes, scoringPigeons);
-      
-      const parts = dayTotalStr.split(':').map(Number);
-      totalSeconds += (parts[0] * 3600) + (parts[1] * 60) + (parts[2] || 0);
-    }
-
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
-    
-    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    const totalSeconds = calculateGrandTotalSeconds(pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons);
+    return formatTime(totalSeconds, false);
 };
 
 export const calculateWinners = (participants, startTime, dateIndex = null, pigeonsPerDay = 0) => {
@@ -57,15 +64,6 @@ export const calculateWinners = (participants, startTime, dateIndex = null, pige
     let firstWinnerName = "";
     let latestLastElapsed = -1;
     let lastWinnerName = "";
-
-    const getSeconds = (timeStr) => {
-      if (!timeStr) return 0;
-      const parts = timeStr.split(':').map(Number);
-      const h = parts[0] || 0;
-      const m = parts[1] || 0;
-      const s = parts[2] || 0;
-      return h * 3600 + m * 60 + s;
-    };
 
     const startSeconds = getSeconds(startTime || '06:00');
 
@@ -100,3 +98,4 @@ export const calculateWinners = (participants, startTime, dateIndex = null, pige
 
     return { firstWinner: firstWinnerName, lastWinner: lastWinnerName };
 };
+

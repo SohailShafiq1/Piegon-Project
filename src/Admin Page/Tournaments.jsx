@@ -516,7 +516,6 @@ const Tournaments = () => {
                               <td key={i} className={`time-input-cell ${isHelper ? 'helper-pigeon-cell' : ''}`}>
                                 <input 
                                   type="time" 
-                                  step="1"
                                   value={p.pigeonTimes && p.pigeonTimes[globalPigeonIdx] ? p.pigeonTimes[globalPigeonIdx] : ''}
                                   onChange={(e) => {
                                     handleTimeChange(pIndex, globalPigeonIdx, e.target.value);
