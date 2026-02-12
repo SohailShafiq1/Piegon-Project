@@ -21,6 +21,10 @@ const Leaderboard = ({ tournament, dateIndex }) => {
     return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeStr;
   };
 
+  const formatPlayerName = (name) => {
+    return name; // Simply return the name and let CSS handle the professional layout
+  };
+
   // Sorting: If total view, sort by Grand Total Seconds. If day view, sort by Daily Total Seconds.
   const sortedParticipants = [...participants].sort((a, b) => {
     let aSecs, bSecs;
@@ -84,7 +88,7 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                 <td className="name-cell">
                    <div className="player-info">
                      <img src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" className="player-img" />
-                     <span>{p.name}</span>
+                     <span>{formatPlayerName(p.name)}</span>
                    </div>
                 </td>
                 {dateIndex !== 'total' && <td>{formatDisplayTime(startTime)}</td>}

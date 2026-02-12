@@ -39,7 +39,9 @@ const Tournaments = () => {
   const [newParticipant, setNewParticipant] = useState({ name: '', image: '', address: '', phone: '' });
   const [showParticipantForm, setShowParticipantForm] = useState(false);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
-  const [activeDateIndex, setActiveDateIndex] = useState(0); // 0 to numDays-1, or 'total'
+  const formatPlayerName = (name) => {
+    return name;
+  };
 
   const handleTimeChange = (participantIndex, pigeonIndex, value) => {
     // deep copy the participants array and the specific participant object to avoid mutation
@@ -502,7 +504,7 @@ const Tournaments = () => {
                       <td className="participant-name-cell">
                         <div className="participant-row-info">
                           <img src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" />
-                          <span className="p-name-table">{p.name}</span>
+                          <span className="p-name-table">{formatPlayerName(p.name)}</span>
                         </div>
                       </td>
                       

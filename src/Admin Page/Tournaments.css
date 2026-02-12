@@ -675,25 +675,29 @@
 }
 
 .participant-name-cell {
-  min-width: 180px;
+  min-width: 120px; /* Reduced from 180px */
+  max-width: 150px;
+  white-space: normal !important;
 }
 
 .participant-row-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px; /* Reduced from 12px */
 }
 
 .participant-row-info img {
-  width: 32px;
-  height: 32px;
+  width: 28px; /* Slightly smaller */
+  height: 28px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .p-name-table {
-  font-weight: 600;
-  white-space: nowrap;
+  font-weight: 700;
+  font-size: 0.8rem;
+  line-height: 1.1;
+  color: #1a202c;
 }
 
 .time-input-cell input {
