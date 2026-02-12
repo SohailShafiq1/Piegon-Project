@@ -710,12 +710,39 @@
   border-color: #c9a44c;
 }
 
+.card-winners-mini {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.winner-small-badge {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.winner-small-badge.first {
+  background-color: #e6f6ff;
+  color: #0070f3;
+}
+
+.winner-small-badge.last {
+  background-color: #fff4e6;
+  color: #f38000;
+}
+
 .total-time-cell {
   font-weight: 700;
-  color: #c9a44c;
-  background-color: #fffaf0;
+  color: #2d3748;
   min-width: 100px;
   text-align: center;
+}
+
+.time-table th:last-child {
+  color: #4a5568;
 }
 
 .start-time-cell {

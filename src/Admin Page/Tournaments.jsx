@@ -39,59 +39,90 @@ const Tournaments = () => {
   const [showParticipantForm, setShowParticipantForm] = useState(false);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
 
-  const calculateTotalTime = (startTime, pigeonTimes, helperCount = 0) => {
-    let totalMinutes = 0;
-    if (!startTime) return '00:00:00';
+  const calculateTotalTime = (startTime, pigeonTimes, scoringCount = 0) => {
+    const effectiveStartTime = startTime || '06:00';
     
-    const [startH, startM] = startTime.split(':').map(Number);
-    const startTotalMinutes = startH * 60 + startM;
+    const getSeconds = (timeStr) => {
+      if (!timeStr) return 0;
+      const parts = timeStr.split(':').map(Number);
+      const h = parts[0] || 0;
+      const m = parts[1] || 0;
+      const s = parts[2] || 0;
+      return h * 3600 + m * 60 + s;
+    };
 
-    (pigeonTimes || []).forEach((time, index) => {
-      // Skip the first 'helperCount' pigeons as specified by the user
-      if (index < helperCount) return;
+    const startSeconds = getSeconds(effectiveStartTime);
+    let totalSeconds = 0;
 
-      if (time) {
-        const [landH, landM] = time.split(':').map(Number);
-        const landTotalMinutes = landH * 60 + landM;
-        const diff = landTotalMinutes - startTotalMinutes;
-        if (diff > 0) totalMinutes += diff;
+    // Filter only non-empty times entered
+    const enteredTimes = (pigeonTimes || []).filter(t => t && t !== '');
+    const k = enteredTimes.length;
+    
+    // Dynamic sliding logic: Skip some from the start only if entered more than scoringCount
+    // SkipCount = Max(0, Entered - Scoring)
+    const skip = Math.max(0, k - scoringCount);
+    
+    // Take exactly the sliding window of scoring pigeons
+    const scoringEntries = enteredTimes.slice(skip);
+
+    scoringEntries.forEach((time) => {
+      let landSeconds = getSeconds(time);
+      if (landSeconds < startSeconds) {
+        landSeconds += 24 * 3600;
       }
+      const diff = landSeconds - startSeconds;
+      if (diff > 0) totalSeconds += diff;
     });
 
-    const h = Math.floor(totalMinutes / 60);
-    const m = totalMinutes % 60;
-    return `${h}:${m}:0`;
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  const calculateWinners = (participants) => {
-    let latestFirstTime = -1;
+  const calculateWinners = (participants, startTime, scoringCount = 0) => {
+    let latestFirstElapsed = -1;
     let firstWinnerName = "";
     
-    let latestLastTime = -1;
+    let latestLastElapsed = -1;
     let lastWinnerName = "";
 
+    const getSeconds = (timeStr) => {
+      if (!timeStr) return 0;
+      const parts = timeStr.split(':').map(Number);
+      const h = parts[0] || 0;
+      const m = parts[1] || 0;
+      const s = parts[2] || 0;
+      return h * 3600 + m * 60 + s;
+    };
+
+    const startSeconds = getSeconds(startTime || '06:00');
+
     (participants || []).forEach(p => {
-      // Collect all non-empty times for this participant
-      const times = (p.pigeonTimes || []).filter(t => t); 
+      const enteredTimes = (p.pigeonTimes || []).filter(t => t && t !== '');
+      const k = enteredTimes.length;
+      const skip = Math.max(0, k - scoringCount);
+      const scoringEntries = enteredTimes.slice(skip);
       
-      if (times.length > 0) {
-        // 1. FIRST WINNER: Person whose FIRST pigeon came LATEST
-        const firstTimeStr = times[0];
-        const [h1, m1] = firstTimeStr.split(':').map(Number);
-        const totalMin1 = h1 * 60 + m1;
+      if (scoringEntries.length > 0) {
+        // 1. FIRST WINNER: Person whose FIRST SCORING pigeon came LATEST (Elapsed)
+        let firstLandSeconds = getSeconds(scoringEntries[0]);
+        if (firstLandSeconds < startSeconds) firstLandSeconds += 24 * 3600;
+        const firstElapsed = firstLandSeconds - startSeconds;
         
-        if (totalMin1 > latestFirstTime) {
-          latestFirstTime = totalMin1;
+        if (firstElapsed > latestFirstElapsed) {
+          latestFirstElapsed = firstElapsed;
           firstWinnerName = p.name;
         }
 
-        // 2. LAST WINNER: Person whose LAST recorded pigeon came LATEST
-        const lastTimeStr = times[times.length - 1];
-        const [h2, m2] = lastTimeStr.split(':').map(Number);
-        const totalMin2 = h2 * 60 + m2;
+        // 2. LAST WINNER: Person whose LAST SCORING pigeon came LATEST (Elapsed)
+        let lastLandSeconds = getSeconds(scoringEntries[scoringEntries.length - 1]);
+        if (lastLandSeconds < startSeconds) lastLandSeconds += 24 * 3600;
+        const lastElapsed = lastLandSeconds - startSeconds;
 
-        if (totalMin2 > latestLastTime) {
-          latestLastTime = totalMin2;
+        if (lastElapsed > latestLastElapsed) {
+          latestLastElapsed = lastElapsed;
           lastWinnerName = p.name;
         }
       }
@@ -101,21 +132,28 @@ const Tournaments = () => {
   };
 
   const handleTimeChange = (participantIndex, pigeonIndex, value) => {
+    // deep copy the participants array and the specific participant object to avoid mutation
     const updatedParticipants = [...formData.participants];
-    if (!updatedParticipants[participantIndex].pigeonTimes) {
-      updatedParticipants[participantIndex].pigeonTimes = [];
-    }
-    updatedParticipants[participantIndex].pigeonTimes[pigeonIndex] = value;
+    const updatedParticipant = { 
+      ...updatedParticipants[participantIndex],
+      pigeonTimes: [...(updatedParticipants[participantIndex].pigeonTimes || [])]
+    };
     
-    // Recalculate total time, skipping helper pigeons
-    updatedParticipants[participantIndex].totalTime = calculateTotalTime(
+    // Set the new time
+    updatedParticipant.pigeonTimes[pigeonIndex] = value;
+    
+    // Recalculate total time with sliding window logic
+    updatedParticipant.totalTime = calculateTotalTime(
       formData.startTime, 
-      updatedParticipants[participantIndex].pigeonTimes,
-      formData.helperPigeons || 0
+      updatedParticipant.pigeonTimes,
+      formData.numPigeons || 0
     );
 
+    // Update the participant in the array
+    updatedParticipants[participantIndex] = updatedParticipant;
+
     // Recalculate First and Last Winners
-    const { firstWinner, lastWinner } = calculateWinners(updatedParticipants);
+    const { firstWinner, lastWinner } = calculateWinners(updatedParticipants, formData.startTime, formData.numPigeons || 0);
 
     setFormData({ 
       ...formData, 
@@ -329,9 +367,21 @@ const Tournaments = () => {
         flyingDates.push(nextDate);
     }
 
+    const totalPigeons = (formData.numPigeons || 0) + (formData.helperPigeons || 0);
+    const updatedParticipants = (formData.participants || []).map(p => ({
+        ...p,
+        totalTime: calculateTotalTime(formData.startTime, p.pigeonTimes, formData.numPigeons || 0)
+    }));
+
+    // Recalculate winners one last time before saving
+    const { firstWinner, lastWinner } = calculateWinners(updatedParticipants, formData.startTime, formData.numPigeons || 0);
+
     const tournamentToSave = {
         ...formData,
-        totalPigeons: (formData.numPigeons || 0) + (formData.helperPigeons || 0),
+        participants: updatedParticipants,
+        firstWinner,
+        lastWinner,
+        totalPigeons,
         flyingDates
     };
 
@@ -494,7 +544,7 @@ const Tournaments = () => {
                       <td className="sr-cell">{pIndex + 1}</td>
                       <td className="participant-name-cell">
                         <div className="participant-row-info">
-                          <img src={p.image || 'https://via.placeholder.com/30'} alt="" />
+                          <img src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" />
                           <span className="p-name-table">{p.name}</span>
                         </div>
                       </td>
@@ -507,13 +557,17 @@ const Tournaments = () => {
                               type="time" 
                               step="1"
                               value={p.pigeonTimes && p.pigeonTimes[i] ? p.pigeonTimes[i] : ''}
-                              onChange={(e) => handleTimeChange(pIndex, i, e.target.value)}
+                              onChange={(e) => {
+                                handleTimeChange(pIndex, i, e.target.value);
+                              }}
                               title={isHelper ? 'Helper Pigeon (Not counted in total)' : ''}
                             />
                           </td>
                         );
                       })}
-                      <td className="total-time-cell">{p.totalTime || '00:00:00'}</td>
+                      <td className="total-time-cell">
+                        {calculateTotalTime(formData.startTime, p.pigeonTimes, formData.numPigeons || 0)}
+                      </td>
                     </tr>
                   ))
                 ) : (
@@ -792,7 +846,7 @@ const Tournaments = () => {
                 <div className="participants-grid">
                   {(formData.participants || []).map((p, index) => (
                     <div key={index} className="participant-card-mini">
-                      <img src={p.image || 'https://via.placeholder.com/40'} alt={p.name} />
+                      <img src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt={p.name} />
                       <div className="p-details">
                         <span className="p-name">{p.name}</span>
                         {p.phone && <span className="p-phone">{p.phone}</span>}
@@ -859,6 +913,13 @@ const Tournaments = () => {
                           <span>{t.numDays} Days</span>
                         </div>
                       </div>
+                      
+                      {(t.firstWinner || t.lastWinner) && (
+                        <div className="card-winners-mini">
+                          {t.firstWinner && <div className="winner-small-badge first">1st: {t.firstWinner}</div>}
+                          {t.lastWinner && <div className="winner-small-badge last">Last: {t.lastWinner}</div>}
+                        </div>
+                      )}
                     </div>
                     <div className="card-footer">
                       <button className="edit-link">
