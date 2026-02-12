@@ -27,6 +27,34 @@
   font-weight: 600;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-info {
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .user-info {
+    display: inline;
+  }
+}
+
+.logout-icon {
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.logout-icon:hover {
+  color: #ffd700;
+}
+
 .menu-dots {
   font-size: 1.4rem;
   cursor: pointer;

@@ -41,8 +41,17 @@ const Tournaments = () => {
   };
 
   const fetchAdmins = async () => {
+    const token = localStorage.getItem('adminToken');
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admins`);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admins`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.status === 401 || response.status === 403) {
+        // Handle unauthorized
+        return;
+      }
       if (response.status === 404) {
         setAdmins([{ id: 1, name: "Super Admin" }, { id: 2, name: "Admin 1" }]);
         return;
@@ -82,11 +91,15 @@ const Tournaments = () => {
     const url = selectedTournament 
       ? `${import.meta.env.VITE_API_BASE_URL}/tournaments/${selectedTournament._id}`
       : `${import.meta.env.VITE_API_BASE_URL}/tournaments`;
+    const token = localStorage.getItem('adminToken');
 
     try {
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(formData),
       });
       if (response.ok) {
@@ -100,9 +113,13 @@ const Tournaments = () => {
 
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this tournament?")) return;
+    const token = localStorage.getItem('adminToken');
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${selectedTournament._id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
       if (response.ok) {
         setView('list');

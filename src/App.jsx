@@ -8,6 +8,8 @@ import Leaderboard from './components/Leaderboard';
 import Contact from './components/Contact';
 import AdminDashboard from './Admin Page/AdminDashboard';
 import Tournaments from './Admin Page/Tournaments';
+import AdminLogin from './Admin Page/AdminLogin';
+import ManageAdmins from './Admin Page/ManageAdmins';
 import './App.css';
 
 function Home({ activeDate, setActiveDate }) {
@@ -64,13 +66,14 @@ function App() {
               </div>
             </>
           } />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/*" element={<AdminDashboard />}>
             <Route index element={<DashboardHome />} />
             <Route path="tournaments" element={<Tournaments />} />
             <Route path="categories" element={<div>Categories Page (Coming Soon)</div>} />
             <Route path="owners" element={<div>Piegon Owners Page (Coming Soon)</div>} />
             <Route path="news" element={<div>News Page (Coming Soon)</div>} />
-            <Route path="users" element={<div>Admin Users Page (Coming Soon)</div>} />
+            <Route path="users" element={<ManageAdmins />} />
           </Route>
         </Routes>
       </div>
