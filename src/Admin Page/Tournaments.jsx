@@ -37,6 +37,45 @@ const Tournaments = () => {
   const [showParticipantForm, setShowParticipantForm] = useState(false);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
 
+  const calculateTotalTime = (startTime, pigeonTimes) => {
+    let totalMinutes = 0;
+    if (!startTime) return '00:00:00';
+    
+    const [startH, startM] = startTime.split(':').map(Number);
+    const startTotalMinutes = startH * 60 + startM;
+
+    (pigeonTimes || []).forEach(time => {
+      if (time) {
+        const [landH, landM] = time.split(':').map(Number);
+        const landTotalMinutes = landH * 60 + landM;
+        const diff = landTotalMinutes - startTotalMinutes;
+        // In pigeon racing, if it lands before start it's 0, but usually it's next day? 
+        // For now, simple diff.
+        if (diff > 0) totalMinutes += diff;
+      }
+    });
+
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    return `${h}:${m}:0`;
+  };
+
+  const handleTimeChange = (participantIndex, pigeonIndex, value) => {
+    const updatedParticipants = [...formData.participants];
+    if (!updatedParticipants[participantIndex].pigeonTimes) {
+      updatedParticipants[participantIndex].pigeonTimes = [];
+    }
+    updatedParticipants[participantIndex].pigeonTimes[pigeonIndex] = value;
+    
+    // Recalculate total time
+    updatedParticipants[participantIndex].totalTime = calculateTotalTime(
+      formData.startTime, 
+      updatedParticipants[participantIndex].pigeonTimes
+    );
+
+    setFormData({ ...formData, participants: updatedParticipants });
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -160,7 +199,7 @@ const Tournaments = () => {
   };
 
   const handleSave = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (formData.noteTimePigeons > formData.numPigeons) {
       setModalContent({
         title: 'Validation Error',
@@ -244,12 +283,89 @@ const Tournaments = () => {
 
   if (loading) return <div>Loading Tournaments...</div>;
 
+  if (view === 'time-entry') {
+    const totalPigeonsCount = (formData.numPigeons || 0) + (formData.helperPigeons || 0);
+
+    return (
+      <div className="time-entry-view">
+        <div className="view-header">
+          <div className="header-left">
+            <button className="back-btn" onClick={() => setView('edit')}><FaArrowLeft /> Back to Edit</button>
+            <div className="header-text-mini">
+              <h2>Pigeon Landing Times</h2>
+              <p>{formData.name}</p>
+            </div>
+          </div>
+          <button className="save-btn" onClick={handleSave}>
+            <FaSave /> Save All Times
+          </button>
+        </div>
+
+        <div className="table-responsive">
+          <table className="time-table">
+            <thead>
+              <tr>
+                <th>Sr.</th>
+                <th>Name</th>
+                <th>Start Time</th>
+                {[...Array(totalPigeonsCount)].map((_, i) => (
+                  <th key={i}>pigeon {i + 1}</th>
+                ))}
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formData.participants && formData.participants.length > 0 ? (
+                formData.participants.map((p, pIndex) => (
+                  <tr key={pIndex}>
+                    <td className="sr-cell">{pIndex + 1}</td>
+                    <td className="participant-name-cell">
+                      <div className="participant-row-info">
+                        <img src={p.image || 'https://via.placeholder.com/30'} alt="" />
+                        <span className="p-name-table">{p.name}</span>
+                      </div>
+                    </td>
+                    <td className="start-time-cell">{formData.startTime}</td>
+                    {[...Array(totalPigeonsCount)].map((_, i) => (
+                      <td key={i} className="time-input-cell">
+                        <input 
+                          type="time" 
+                          step="1"
+                          value={p.pigeonTimes && p.pigeonTimes[i] ? p.pigeonTimes[i] : ''}
+                          onChange={(e) => handleTimeChange(pIndex, i, e.target.value)}
+                        />
+                      </td>
+                    ))}
+                    <td className="total-time-cell">{p.totalTime || '00:00:00'}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={totalPigeonsCount + 4} className="no-data">
+                    No participants added yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
   if (view === 'edit') {
     return (
       <div className="tournament-edit-view">
         <div className="view-header">
-          <button className="back-btn" onClick={() => setView('list')}><FaArrowLeft /> Back</button>
-          <h2>{selectedTournament ? 'Edit Tournament' : 'Create Tournament'}</h2>
+          <div className="header-left">
+            <button className="back-btn" onClick={() => setView('list')}><FaArrowLeft /> Back</button>
+            <h2>{selectedTournament ? 'Edit Tournament' : 'Create Tournament'}</h2>
+          </div>
+          {selectedTournament && (
+            <button className="add-time-btn" onClick={() => setView('time-entry')}>
+              <FaClock /> Add Time
+            </button>
+          )}
         </div>
 
         <form className="tournament-form" onSubmit={handleSave}>

@@ -553,3 +553,127 @@
   opacity: 1;
 }
 
+/* Time Entry View */
+.time-entry-view {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  margin-top: 20px;
+}
+
+.header-text-mini h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #2d3748;
+}
+
+.header-text-mini p {
+  margin: 0;
+  color: #718096;
+}
+
+.add-time-btn {
+  background-color: #4a5568;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.add-time-btn:hover {
+  background-color: #2d3748;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  margin-top: 24px;
+  border: 1px solid #edf2f7;
+  border-radius: 8px;
+}
+
+.time-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.time-table th {
+  background-color: #f8fafc;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 2px solid #edf2f7;
+  color: #4a5568;
+  text-transform: capitalize;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.time-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #edf2f7;
+  color: #2d3748;
+}
+
+.sr-cell {
+  width: 40px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.participant-name-cell {
+  min-width: 180px;
+}
+
+.participant-row-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.participant-row-info img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.p-name-table {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.time-input-cell input {
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #2d3748;
+  outline: none;
+  width: 90px;
+}
+
+.time-input-cell input:focus {
+  border-color: #c9a44c;
+}
+
+.total-time-cell {
+  font-weight: 700;
+  color: #c9a44c;
+  background-color: #fffaf0;
+  min-width: 100px;
+  text-align: center;
+}
+
+.start-time-cell {
+  color: #718096;
+  font-family: monospace;
+}
+
+
