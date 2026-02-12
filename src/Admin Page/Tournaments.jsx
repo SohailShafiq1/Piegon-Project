@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaTrophy, FaUserShield, FaArrowLeft, FaSave, FaTrash, FaImage } from 'react-icons/fa';
+import { FaPlus, FaTrophy, FaUserShield, FaArrowLeft, FaSave, FaTrash, FaImage, FaCalendarAlt, FaClock, FaDove } from 'react-icons/fa';
+import './Tournaments.css';
 
 const Tournaments = () => {
   const [tournaments, setTournaments] = useState([]);
@@ -41,7 +42,17 @@ const Tournaments = () => {
         }
       });
       const data = await response.json();
-      setTournaments(data);
+      
+      // Sort tournaments: User's assigned tournaments first
+      const sortedTournaments = [...data].sort((a, b) => {
+        const isAAdmin = (a.admin?._id || a.admin) === currentUser?.id;
+        const isBAdmin = (b.admin?._id || b.admin) === currentUser?.id;
+        if (isAAdmin && !isBAdmin) return -1;
+        if (!isAAdmin && isBAdmin) return 1;
+        return 0;
+      });
+
+      setTournaments(sortedTournaments);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching tournaments:", error);
@@ -73,6 +84,14 @@ const Tournaments = () => {
   };
 
   const handleEdit = (t) => {
+    const isAssignedAdmin = (t.admin?._id || t.admin) === currentUser?.id;
+    const isSuperAdmin = currentUser?.role === 'Super Admin';
+
+    if (!isAssignedAdmin && !isSuperAdmin) {
+      alert("You are not an admin for this tournament.");
+      return;
+    }
+
     setSelectedTournament(t);
     setFormData({
       ...initialFormState,
@@ -285,7 +304,7 @@ const Tournaments = () => {
           </div>
 
           <div className="form-actions">
-            {selectedTournament && (
+            {selectedTournament && currentUser?.role === 'Super Admin' && (
               <button type="button" className="delete-btn" onClick={handleDelete}>
                 <FaTrash /> Delete
               </button>
@@ -302,10 +321,15 @@ const Tournaments = () => {
   return (
     <div className="tournaments-section">
       <div className="section-header">
-        <h2>Manage Tournaments</h2>
-        <button className="add-btn" onClick={handleCreateNew}>
-          <FaPlus /> New Tournament
-        </button>
+        <div className="header-text">
+          <h2>Tournament Management</h2>
+          <p>View and manage all your pigeon flying tournaments</p>
+        </div>
+        {currentUser?.role === 'Super Admin' && (
+          <button className="add-btn" onClick={handleCreateNew}>
+            <FaPlus /> New Tournament
+          </button>
+        )}
       </div>
 
       <div className="tournaments-list">
@@ -313,19 +337,48 @@ const Tournaments = () => {
           <p className="no-data">No tournaments found. Click "New Tournament" to add one.</p>
         ) : (
           <div className="tournament-grid">
-            {(tournaments || []).map((t) => (
-              <div key={t._id} className="tournament-card" onClick={() => handleEdit(t)}>
-                <div className="card-badge" data-status={t.status}>{t.status}</div>
-                <div className="card-icon"><FaTrophy /></div>
-                <div className="card-info">
-                  <h3>{t.name}</h3>
-                  <div className="card-meta">
-                    <span><FaUserShield /> {t.admin?.name || 'Unassigned'}</span>
-                    <span>Days: {t.numDays}</span>
+            {(tournaments || []).map((t) => {
+              const isUserAdmin = (t.admin?._id || t.admin) === currentUser?.id;
+              return (
+                <div 
+                  key={t._id} 
+                  className={`tournament-card ${isUserAdmin ? 'my-tournament' : ''}`} 
+                  onClick={() => handleEdit(t)}
+                >
+                  <div className="card-top">
+                    <span className={`status-badge ${t.status.toLowerCase()}`}>{t.status}</span>
+                    <div className="card-icon"><FaTrophy /></div>
+                  </div>
+                  <div className="card-info">
+                    <h3>{t.name}</h3>
+                    <div className="card-details">
+                      <div className="detail-item">
+                        <FaUserShield className="detail-icon" />
+                        <span>{t.admin?.name || 'Unassigned'}</span>
+                      </div>
+                      <div className="detail-item">
+                        <FaCalendarAlt className="detail-icon" />
+                        <span>{t.startDate ? new Date(t.startDate).toLocaleDateString() : 'No date'}</span>
+                      </div>
+                      <div className="detail-item">
+                        <FaDove className="detail-icon" />
+                        <span>{t.numPigeons} Pigeons</span>
+                      </div>
+                      <div className="detail-item">
+                        <FaClock className="detail-icon" />
+                        <span>{t.numDays} Days</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card-footer">
+                    <button className="edit-link">
+                      {isUserAdmin || currentUser?.role === 'Super Admin' ? 'Edit Details' : 'View Only'}
+                    </button>
+                    {isUserAdmin && <span className="admin-badge">My Tournament</span>}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
