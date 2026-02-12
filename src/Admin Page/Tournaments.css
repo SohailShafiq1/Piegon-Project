@@ -562,6 +562,53 @@
   margin-top: 20px;
 }
 
+.winners-snapshot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  background-color: #f8fafc;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.winner-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.winner-badge.first {
+  background-color: #ebf8ff;
+  color: #2b6cb0;
+  border-left: 4px solid #3182ce;
+}
+
+.winner-badge.last {
+  background-color: #fffaf0;
+  color: #c05621;
+  border-left: 4px solid #dd6b20;
+}
+
+.winner-badge .label {
+  color: #4a5568;
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.winner-badge .name {
+  color: #1a202c;
+  font-size: 1.05rem;
+}
+
 .header-text-mini h2 {
   margin: 0;
   font-size: 1.4rem;

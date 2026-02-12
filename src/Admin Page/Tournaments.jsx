@@ -29,7 +29,9 @@ const Tournaments = () => {
     status: 'Upcoming',
     showOnHome: true,
     posters: [],
-    participants: []
+    participants: [],
+    firstWinner: '',
+    lastWinner: ''
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -61,6 +63,43 @@ const Tournaments = () => {
     return `${h}:${m}:0`;
   };
 
+  const calculateWinners = (participants) => {
+    let latestFirstTime = -1;
+    let firstWinnerName = "";
+    
+    let latestLastTime = -1;
+    let lastWinnerName = "";
+
+    (participants || []).forEach(p => {
+      // Collect all non-empty times for this participant
+      const times = (p.pigeonTimes || []).filter(t => t); 
+      
+      if (times.length > 0) {
+        // 1. FIRST WINNER: Person whose FIRST pigeon came LATEST
+        const firstTimeStr = times[0];
+        const [h1, m1] = firstTimeStr.split(':').map(Number);
+        const totalMin1 = h1 * 60 + m1;
+        
+        if (totalMin1 > latestFirstTime) {
+          latestFirstTime = totalMin1;
+          firstWinnerName = p.name;
+        }
+
+        // 2. LAST WINNER: Person whose LAST recorded pigeon came LATEST
+        const lastTimeStr = times[times.length - 1];
+        const [h2, m2] = lastTimeStr.split(':').map(Number);
+        const totalMin2 = h2 * 60 + m2;
+
+        if (totalMin2 > latestLastTime) {
+          latestLastTime = totalMin2;
+          lastWinnerName = p.name;
+        }
+      }
+    });
+
+    return { firstWinner: firstWinnerName, lastWinner: lastWinnerName };
+  };
+
   const handleTimeChange = (participantIndex, pigeonIndex, value) => {
     const updatedParticipants = [...formData.participants];
     if (!updatedParticipants[participantIndex].pigeonTimes) {
@@ -75,7 +114,15 @@ const Tournaments = () => {
       formData.helperPigeons || 0
     );
 
-    setFormData({ ...formData, participants: updatedParticipants });
+    // Recalculate First and Last Winners
+    const { firstWinner, lastWinner } = calculateWinners(updatedParticipants);
+
+    setFormData({ 
+      ...formData, 
+      participants: updatedParticipants,
+      firstWinner,
+      lastWinner
+    });
   };
 
   const handleImageChange = (e) => {
@@ -191,7 +238,9 @@ const Tournaments = () => {
       admin: t.admin?._id || t.admin,
       startDate: t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       posters: t.posters || [],
-      participants: t.participants || []
+      participants: t.participants || [],
+      firstWinner: t.firstWinner || '',
+      lastWinner: t.lastWinner || ''
     });
     setView('edit');
   };
@@ -348,6 +397,23 @@ const Tournaments = () => {
               <FaSave /> Save All Times
             </button>
           </div>
+
+          {(formData.firstWinner || formData.lastWinner) && (
+            <div className="winners-snapshot">
+              {formData.firstWinner && (
+                <div className="winner-badge first">
+                  <span className="label">First Winner:</span>
+                  <span className="name">{formData.firstWinner}</span>
+                </div>
+              )}
+              {formData.lastWinner && (
+                <div className="winner-badge last">
+                  <span className="label">Last Winner:</span>
+                  <span className="name">{formData.lastWinner}</span>
+                </div>
+              )}
+            </div>
+          )}
   
           <div className="table-responsive">
             <table className="time-table">
