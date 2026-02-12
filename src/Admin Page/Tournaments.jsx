@@ -21,6 +21,7 @@ const Tournaments = () => {
     name: '',
     admin: currentUser?.id || '',
     startDate: new Date().toISOString().split('T')[0],
+    startTime: '06:00',
     numDays: 1,
     numPigeons: 0,
     noteTimePigeons: 0,
@@ -124,7 +125,7 @@ const Tournaments = () => {
     if (formData.noteTimePigeons > formData.numPigeons) {
       setModalContent({
         title: 'Validation Error',
-        message: 'Note time pigeons cannot be greater than total number of pigeons'
+        message: 'Note time pigeons cannot be greater than the number of flying pigeons'
       });
       setModalOpen(true);
       return;
@@ -141,6 +142,7 @@ const Tournaments = () => {
 
     const tournamentToSave = {
         ...formData,
+        totalPigeons: (formData.numPigeons || 0) + (formData.helperPigeons || 0),
         flyingDates
     };
 
@@ -159,12 +161,26 @@ const Tournaments = () => {
         },
         body: JSON.stringify(tournamentToSave),
       });
+
       if (response.ok) {
         setView('list');
         fetchTournaments();
+      } else {
+        const errorData = await response.json();
+        console.error("Server validation error:", errorData);
+        setModalContent({
+            title: 'Error',
+            message: errorData.message || 'Failed to save tournament'
+        });
+        setModalOpen(true);
       }
     } catch (error) {
       console.error("Error saving tournament:", error);
+      setModalContent({
+        title: 'Network Error',
+        message: 'Could not connect to the server.'
+      });
+      setModalOpen(true);
     }
   };
 
@@ -235,6 +251,15 @@ const Tournaments = () => {
             </div>
 
             <div className="form-group">
+              <label>Start Time</label>
+              <input 
+                type="time" 
+                value={formData.startTime}
+                onChange={(e) => setFormData({...formData, startTime: e.target.value})}
+              />
+            </div>
+
+            <div className="form-group">
               <label>Number of Days (1-12)</label>
               <select 
                 value={formData.numDays || 1}
@@ -262,7 +287,7 @@ const Tournaments = () => {
                 value={formData.noteTimePigeons || 0}
                 onChange={(e) => setFormData({...formData, noteTimePigeons: parseInt(e.target.value) || 0})}
               />
-              <small>Must be ≤ Total Pigeons</small>
+              <small>Must be ≤ Flying Pigeons</small>
             </div>
 
             <div className="form-group">
@@ -272,6 +297,17 @@ const Tournaments = () => {
                 value={formData.helperPigeons || 0}
                 onChange={(e) => setFormData({...formData, helperPigeons: parseInt(e.target.value) || 0})}
               />
+            </div>
+
+            <div className="form-group">
+              <label>Total Pigeons (Auto)</label>
+              <input 
+                type="number" 
+                value={(formData.numPigeons || 0) + (formData.helperPigeons || 0)}
+                readOnly
+                className="readonly-input"
+              />
+              <small>Sum of Pigeons + Helpers</small>
             </div>
 
             <div className="form-group">
@@ -386,11 +422,11 @@ const Tournaments = () => {
                       </div>
                       <div className="detail-item">
                         <FaCalendarAlt className="detail-icon" />
-                        <span>{t.startDate ? new Date(t.startDate).toLocaleDateString() : 'No date'}</span>
+                      <span>{t.startDate ? new Date(t.startDate).toLocaleDateString() : 'No date'} {t.startTime || ''}</span>
                       </div>
                       <div className="detail-item">
                         <FaDove className="detail-icon" />
-                        <span>{t.numPigeons} Pigeons</span>
+                      <span>{t.totalPigeons || (t.numPigeons + t.helperPigeons)} Pigeons</span>
                       </div>
                       <div className="detail-item">
                         <FaClock className="detail-icon" />

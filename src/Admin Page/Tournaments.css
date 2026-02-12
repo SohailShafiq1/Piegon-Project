@@ -233,6 +233,13 @@
   box-shadow: 0 0 0 3px rgba(201, 164, 76, 0.1);
 }
 
+.readonly-input {
+  background-color: #f7fafc;
+  color: #718096;
+  cursor: not-allowed;
+  border-style: dashed !important;
+}
+
 .checkbox-group label {
   display: flex;
   flex-direction: row;
