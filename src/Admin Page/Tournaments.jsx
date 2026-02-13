@@ -42,6 +42,45 @@ const Tournaments = () => {
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [activeDateIndex, setActiveDateIndex] = useState(0); // 0 to numDays-1, or 'total'
 
+  // Global Owners Search State
+  const [ownerSearch, setOwnerSearch] = useState('');
+  const [showOwnerSuggestions, setShowOwnerSuggestions] = useState(false);
+  const [globalOwnersList, setGlobalOwnersList] = useState([]);
+
+  useEffect(() => {
+    if (ownerSearch.length > 1) {
+      searchGlobalOwners();
+    } else {
+      setGlobalOwnersList([]);
+      setShowOwnerSuggestions(false);
+    }
+  }, [ownerSearch]);
+
+  const searchGlobalOwners = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/owners/search?q=${ownerSearch}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setGlobalOwnersList(data);
+      setShowOwnerSuggestions(data.length > 0);
+    } catch (error) {
+      console.error("Error searching owners:", error);
+    }
+  };
+
+  const handleSelectOwner = (owner) => {
+    setNewParticipant({
+      name: owner.name,
+      image: owner.image || '',
+      address: owner.address || '',
+      phone: owner.phone || ''
+    });
+    setOwnerSearch(owner.name);
+    setShowOwnerSuggestions(false);
+  };
+
   const formatPlayerName = (name) => {
     if (!name) return "";
     const words = name.split(/\s+/);
@@ -796,7 +835,11 @@ const Tournaments = () => {
                 <button 
                   type="button" 
                   className="add-person-btn" 
-                  onClick={() => setParticipantModalOpen(true)}
+                  onClick={() => {
+                    setNewParticipant({ name: '', image: '', address: '', phone: '' });
+                    setOwnerSearch('');
+                    setParticipantModalOpen(true);
+                  }}
                 >
                   <FaUserPlus /> Add Persons
                 </button>
@@ -836,14 +879,30 @@ const Tournaments = () => {
                             )}
                           </div>
                         </div>
-                        <div className="form-group">
-                          <label>Full Name *</label>
+                        <div className="form-group" style={{ position: 'relative' }}>
+                          <label>Full Name * (Search Global Owners)</label>
                           <input 
                             type="text" 
-                            value={newParticipant.name}
-                            onChange={(e) => setNewParticipant({...newParticipant, name: e.target.value})}
-                            placeholder="Enter name"
+                            value={ownerSearch}
+                            onChange={(e) => {
+                              setOwnerSearch(e.target.value);
+                              setNewParticipant({...newParticipant, name: e.target.value});
+                            }}
+                            placeholder="Type to search global owners..."
                           />
+                          {showOwnerSuggestions && (
+                            <div className="owner-suggestions">
+                              {globalOwnersList.map(owner => (
+                                <div key={owner._id} className="suggestion-item" onClick={() => handleSelectOwner(owner)}>
+                                  <img src={owner.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(owner.name)}`} alt="" />
+                                  <div className="suggestion-info">
+                                    <span className="suggestion-name">{owner.name}</span>
+                                    {owner.phone && <span className="suggestion-phone">{owner.phone}</span>}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                         <div className="form-group">
                           <label>Phone Number (Optional)</label>

@@ -10,6 +10,7 @@ import AdminDashboard from './Admin Page/AdminDashboard';
 import Tournaments from './Admin Page/Tournaments';
 import AdminLogin from './Admin Page/AdminLogin';
 import ManageAdmins from './Admin Page/ManageAdmins';
+import ManageOwners from './Admin Page/ManageOwners';
 import './App.css';
 
 function Home() {
@@ -199,7 +200,7 @@ function App() {
             <Route index element={<DashboardHome />} />
             <Route path="tournaments" element={<Tournaments />} />
             <Route path="categories" element={<div>Categories Page (Coming Soon)</div>} />
-            <Route path="owners" element={<div>Piegon Owners Page (Coming Soon)</div>} />
+            <Route path="owners" element={<ManageOwners />} />
             <Route path="news" element={<div>News Page (Coming Soon)</div>} />
             <Route path="users" element={<ManageAdmins />} />
           </Route>
