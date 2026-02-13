@@ -204,6 +204,38 @@
   padding-bottom: 20px;
 }
 
+.header-actions-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.header-actions-group button {
+  width: 100%;
+  justify-content: center;
+  min-width: 200px;
+}
+
+@media (max-width: 768px) {
+  .view-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-actions-group {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .header-left {
+    display: flex; 
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+}
+
 .back-btn {
   background: #f7fafc;
   border: 1px solid #e2e8f0;

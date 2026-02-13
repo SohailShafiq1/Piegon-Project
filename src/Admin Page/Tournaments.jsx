@@ -648,11 +648,29 @@ const Tournaments = () => {
               <button className="back-btn" onClick={() => setView('list')}><FaArrowLeft /> Back</button>
               <h2>{selectedTournament ? 'Edit Tournament' : 'Create Tournament'}</h2>
             </div>
-            {selectedTournament && (
-              <button className="add-time-btn" onClick={() => setView('time-entry')}>
-                <FaClock /> Add Time
+            <div className="header-actions-group">
+              {selectedTournament && (
+                <button 
+                  type="button" 
+                  className="add-person-btn" 
+                  onClick={() => {
+                    setNewParticipant({ name: '', image: '', address: '', phone: '' });
+                    setOwnerSearch('');
+                    setParticipantModalOpen(true);
+                  }}
+                >
+                  <FaUserPlus /> Add Persons
+                </button>
+              )}
+              <button type="button" className="save-btn" onClick={handleSave}>
+                <FaSave /> {selectedTournament ? 'Update Tournament' : 'Create Tournament'}
               </button>
-            )}
+              {selectedTournament && (
+                <button className="add-time-btn" onClick={() => setView('time-entry')}>
+                  <FaClock /> Add Time
+                </button>
+              )}
+            </div>
           </div>
   
           <form className="tournament-form" onSubmit={handleSave}>
