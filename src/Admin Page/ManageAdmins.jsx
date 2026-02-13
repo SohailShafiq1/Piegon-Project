@@ -92,6 +92,7 @@ const ManageAdmins = () => {
                 type="email" 
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
+                autoComplete="off"
               />
             </div>
             <div className="form-group">
@@ -101,6 +102,7 @@ const ManageAdmins = () => {
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
                 required 
+                autoComplete="new-password"
               />
             </div>
             <div className="form-group">
