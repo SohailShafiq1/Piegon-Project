@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaUserFriends, FaSave, FaTrash, FaEdit, FaSearch, FaImage, FaMapMarkerAlt, FaPhone } from 'react-icons/fa';
+import { FaPlus, FaUser, FaSave, FaTrash, FaEdit, FaSearch, FaImage, FaMapMarkerAlt, FaPhone } from 'react-icons/fa';
 import Modal from '../components/Modal';
 import '../styles/Modal.css';
 import './Tournaments.css'; // Reusing some styles
@@ -119,7 +119,7 @@ const ManageOwners = () => {
     <div className="tournaments-page">
       <div className="page-header">
         <div className="header-content">
-          <h1><FaUserFriends /> Pigeon Owners</h1>
+          <h1><FaUser /> Pigeon Owners</h1>
           <p>Manage global pigeon owners for all tournaments</p>
         </div>
         {view === 'list' && (
@@ -155,21 +155,21 @@ const ManageOwners = () => {
               <tbody>
                 {filteredOwners.map(owner => (
                   <tr key={owner._id}>
-                    <td data-label="Photo">
+                    <td>
                       <div className="owner-row-img">
                         {owner.image ? (
                           <img src={owner.image} alt={owner.name} />
                         ) : (
                           <div className="placeholder-circle">
-                            <FaUserFriends />
+                            <FaUser />
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="owner-row-name" data-label="Name">{owner.name}</td>
-                    <td data-label="Phone">{owner.phone || '-'}</td>
-                    <td data-label="Address">{owner.address || '-'}</td>
-                    <td data-label="Actions">
+                    <td className="owner-row-name">{owner.name}</td>
+                    <td>{owner.phone || '-'}</td>
+                    <td>{owner.address || '-'}</td>
+                    <td>
                       <div className="table-actions">
                         <button className="action-btn edit" onClick={() => {
                           setSelectedOwner(owner);
