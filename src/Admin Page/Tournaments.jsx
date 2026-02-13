@@ -72,6 +72,7 @@ const Tournaments = () => {
 
   const handleSelectOwner = (owner) => {
     setNewParticipant({
+      ownerId: owner._id,
       name: owner.name,
       image: owner.image || '',
       address: owner.address || '',
