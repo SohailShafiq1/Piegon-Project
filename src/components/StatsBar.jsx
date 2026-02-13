@@ -109,10 +109,6 @@ const StatsBar = ({ tournament, dateIndex }) => {
           Lofts: {loftCount}, Total pigeons: {totalPigeonsCount}, Pigeons landed: {landedCount}, Pigeons remaining: {remainingCount}
         </div>
       </div>
-
-      <div className="last-winner">
-        لاسٹ ونر : {tournament.lastWinner || 'N/A'}
-      </div>
     </div>
   );
 };

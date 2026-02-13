@@ -8,30 +8,64 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  padding: 8px 5px;
+  gap: 8px; /* Reduced gap */
+  padding: 6px 5px; /* More compact */
   background-color: #fcfcfc;
   border-bottom: 2px solid #f0f0f0;
   margin-bottom: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* Force one line */
+  overflow-x: hidden; /* Prevent horizontal scroll from banner */
 }
 
 .winner-tag {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px; /* Reduced gap */
   background: white;
-  padding: 4px 12px;
+  padding: 3px 10px; /* More compact */
   border-radius: 25px;
   border: 1px solid #eee;
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  flex: 0 1 auto; /* Allow shrinking but not growing */
+  min-width: 0; /* Allow shrinking below content size if needed */
 }
 
 .winner-tag.first { border-left: 4px solid #c9a44c; }
 .winner-tag.last { border-left: 4px solid #4a5568; }
 
-.winner-tag .label { color: #718096; font-weight: 600; font-size: 0.75rem; }
-.winner-tag .name { color: #1a202c; font-weight: 800; font-size: 0.8rem; }
+.winner-tag .label { 
+  color: #718096; 
+  font-weight: 600; 
+  font-size: 0.7rem; /* Smaller font */
+  white-space: nowrap;
+}
+
+.winner-tag .name { 
+  color: #1a202c; 
+  font-weight: 800; 
+  font-size: 0.75rem; /* Smaller font */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 480px) {
+  .winners-banner {
+    gap: 4px;
+    padding: 4px 2px;
+  }
+  .winner-tag {
+    padding: 2px 6px;
+    gap: 3px;
+  }
+  .winner-tag .label {
+    font-size: 0.6rem;
+  }
+  .winner-tag .name {
+    font-size: 0.65rem;
+    max-width: 60px; /* Prevent long names from pushing out the other winner */
+  }
+}
 
 .table-responsive {
   width: 100%;
