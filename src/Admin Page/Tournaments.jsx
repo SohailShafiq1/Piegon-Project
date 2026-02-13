@@ -30,6 +30,7 @@ const Tournaments = () => {
     status: 'Upcoming',
     showOnHome: true,
     posters: [],
+    headline: '',
     participants: [],
     firstWinner: '',
     lastWinner: ''
@@ -251,6 +252,7 @@ const Tournaments = () => {
       admin: t.admin?._id || t.admin,
       startDate: t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       posters: t.posters || [],
+      headline: t.headline || '',
       participants: t.participants || [],
       firstWinner: t.firstWinner || '',
       lastWinner: t.lastWinner || ''
@@ -716,6 +718,16 @@ const Tournaments = () => {
                   />
                   Show on Home Screen
                 </label>
+              </div>
+
+              <div className="form-group full-width">
+                <label>Announcement Headline (Moving Text)</label>
+                <input 
+                  type="text" 
+                  value={formData.headline || ''}
+                  onChange={(e) => setFormData({...formData, headline: e.target.value})}
+                  placeholder="e.g. کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز"
+                />
               </div>
   
               <div className="form-group full-width">

@@ -71,7 +71,9 @@ function Home() {
       <Navbar />
       <div className="main-content">
         <div className="announcement">
-          {activeTournament.name} - کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز
+          <marquee behavior="scroll" direction="right">
+            {activeTournament.headline || `${activeTournament.name} - کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
+          </marquee>
         </div>
         <StatsBar tournament={activeTournament} />
         <DateTabs 
@@ -137,7 +139,9 @@ function TournamentView() {
       <Navbar />
       <div className="main-content">
         <div className="announcement">
-          {tournament.name} - کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز
+          <marquee behavior="scroll" direction="right">
+            {tournament.headline || `${tournament.name} - کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
+          </marquee>
         </div>
         <StatsBar tournament={tournament} />
         <DateTabs 
