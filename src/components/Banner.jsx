@@ -3,9 +3,15 @@ import '../styles/Banner.css';
 import img1 from '../assets/img1.jpg';
 import img2 from '../assets/img2.jpg';
 
-const Banner = () => {
-  const images = [img1, img2];
+const Banner = ({ posters }) => {
+  const defaultImages = [img1, img2];
+  const images = (posters && posters.length > 0) ? posters : defaultImages;
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    // Reset index when images change (e.g. switching tournaments)
+    setCurrentIndex(0);
+  }, [images.length]);
 
   useEffect(() => {
     const timer = setInterval(() => {

@@ -104,6 +104,23 @@ const Tournaments = () => {
     }
   };
 
+  const handlePostersUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      const readers = files.map(file => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(readers).then(results => {
+        setFormData(prev => ({ ...prev, posters: [...(prev.posters || []), ...results] }));
+      });
+    }
+  };
+
   const handleAddParticipant = async () => {
     if (!newParticipant.name) {
       setModalContent({
@@ -731,32 +748,34 @@ const Tournaments = () => {
               </div>
   
               <div className="form-group full-width">
-                <label>Posters (Image URLs)</label>
+                <label>Tournament Posters (Upload from Gallery)</label>
                 <div className="image-input-container">
                   <input 
-                    type="text" 
-                    placeholder="Paste Image URL here"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (e.target.value) {
-                          setFormData({...formData, posters: [...formData.posters, e.target.value]});
-                          e.target.value = '';
-                        }
-                      }
-                    }}
+                    type="file" 
+                    id="poster-upload"
+                    multiple
+                    accept="image/*"
+                    onChange={handlePostersUpload}
+                    style={{ display: 'none' }}
                   />
-                  <small>Press Enter to add multiple images</small>
+                  <button 
+                    type="button" 
+                    className="upload-btn"
+                    onClick={() => document.getElementById('poster-upload').click()}
+                  >
+                    <FaImage /> Select Posters from Gallery
+                  </button>
+                  <small>You can select multiple images</small>
                 </div>
                 <div className="poster-preview-list">
                   {(formData.posters || []).map((url, index) => (
                     <div key={index} className="poster-tag">
-                      <img src={url} alt="poster" />
-                      <button type="button" onClick={() => {
+                      <img src={url} alt={`poster-${index}`} />
+                      <button type="button" className="remove-poster" onClick={() => {
                          const newPosters = [...(formData.posters || [])];
                          newPosters.splice(index, 1);
                          setFormData({...formData, posters: newPosters});
-                      }}>x</button>
+                      }}>×</button>
                     </div>
                   ))}
                 </div>

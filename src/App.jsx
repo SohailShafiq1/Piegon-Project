@@ -55,7 +55,7 @@ function Home() {
   if (loading) return <div className="loading-screen">Loading...</div>;
   if (!activeTournament) return (
     <>
-      <Banner />
+      <Banner posters={[]} />
       <Navbar />
       <div className="main-content">
         <div className="no-tournaments">No active tournaments found. Create one in the Admin panel.</div>
@@ -67,7 +67,7 @@ function Home() {
 
   return (
     <>
-      <Banner />
+      <Banner posters={activeTournament.posters} />
       <Navbar />
       <div className="main-content">
         <div className="announcement">
@@ -135,7 +135,7 @@ function TournamentView() {
 
   return (
     <>
-      <Banner />
+      <Banner posters={tournament.posters} />
       <Navbar />
       <div className="main-content">
         <div className="announcement">
