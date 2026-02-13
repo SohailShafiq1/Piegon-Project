@@ -75,7 +75,7 @@ function Home() {
             {activeTournament.headline || `${activeTournament.name} - کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
           </marquee>
         </div>
-        <StatsBar tournament={activeTournament} />
+        <StatsBar tournament={activeTournament} dateIndex={activeDateIndex} />
         <DateTabs 
           dates={flyingDates} 
           activeDateIndex={activeDateIndex} 
@@ -143,7 +143,7 @@ function TournamentView() {
             {tournament.headline || `${tournament.name} - کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
           </marquee>
         </div>
-        <StatsBar tournament={tournament} />
+        <StatsBar tournament={tournament} dateIndex={activeDateIndex} />
         <DateTabs 
           dates={flyingDates} 
           activeDateIndex={activeDateIndex} 
