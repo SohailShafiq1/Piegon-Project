@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import Footer from '../components/Footer';
 import './AdminDashboard.css';
 import { FaTachometerAlt, FaList, FaTrophy, FaUserFriends, FaNewspaper, FaUserShield, FaEllipsisV, FaSignOutAlt } from 'react-icons/fa';
 
@@ -91,7 +92,10 @@ const AdminDashboard = () => {
       {isMenuOpen && <div className="menu-overlay" onClick={() => setIsMenuOpen(false)}></div>}
 
       <div className="admin-content-area">
-        <Outlet />
+        <div className="admin-main-container">
+          <Outlet />
+        </div>
+        <Footer />
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import StatsBar from './components/StatsBar';
 import DateTabs from './components/DateTabs';
 import Leaderboard from './components/Leaderboard';
 import Contact from './components/Contact';
+import Footer from './components/Footer';
 import AdminDashboard from './Admin Page/AdminDashboard';
 import Tournaments from './Admin Page/Tournaments';
 import Categories from './Admin Page/Categories';
@@ -104,6 +105,7 @@ function Home() {
           dateIndex={activeDateIndex} 
         />
       </div>
+      <Footer />
     </>
   );
 }
@@ -187,6 +189,7 @@ function TournamentView() {
           dateIndex={activeDateIndex} 
         />
       </div>
+      <Footer />
     </>
   );
 }
@@ -252,6 +255,7 @@ function App() {
               <div className="main-content">
                 <Contact />
               </div>
+              <Footer />
             </>
           } />
           <Route path="/admin/login" element={<AdminLogin />} />

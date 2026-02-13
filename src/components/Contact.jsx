@@ -7,16 +7,16 @@ const Contact = () => {
     <div className="contact-page">
       <div className="contact-container">
         <h1>Contact Us</h1>
-        <p>Connect with us on social media</p>
+        <p>اگر آپ بھی ایسی پروفیشنل ویب سائٹ بنوانا چاہتے ہیں تو ابھی واٹس ایپ پر رابطہ کریں۔</p>
         <div className="social-links">
-          <a href="https://wa.me/YOUR_NUMBER" target="_blank" rel="noopener noreferrer" className="social-button whatsapp">
+          <a href="https://wa.me/923408432739?text=Hello%20there!" target="_blank" rel="noopener noreferrer" className="social-button whatsapp">
             <FaWhatsapp />
             <span>WhatsApp</span>
           </a>
-          <a href="https://facebook.com/YOUR_PAGE" target="_blank" rel="noopener noreferrer" className="social-button facebook">
+          {/* <a href="https://facebook.com/YOUR_PAGE" target="_blank" rel="noopener noreferrer" className="social-button facebook">
             <FaFacebook />
             <span>Facebook</span>
-          </a>
+          </a> */}
         </div>
         <button className="back-button" onClick={() => window.history.back()}>
           Back to Home
