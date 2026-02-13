@@ -22,7 +22,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="nav-container">
-        <Link to="/" className="nav-brand">karianwalapigeon</Link>
+        <Link to="/" className="nav-brand">kotlapigeon</Link>
         <ul className="nav-links">
           {tournaments.length > 0 ? (
             tournaments.map((t) => (

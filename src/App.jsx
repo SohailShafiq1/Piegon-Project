@@ -85,7 +85,7 @@ function Home() {
       <div className="main-content">
         <div className="announcement">
           <marquee behavior="scroll" direction="right">
-            {activeTournament.headline || `${activeTournament.name} - کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
+            {activeTournament.headline || `${activeTournament.name} - کوٹلہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
             {newsList.map(news => (
                <span key={news._id} style={{ marginLeft: '100px' }}>
                  {news.title}: {news.content}
@@ -168,7 +168,7 @@ function TournamentView() {
       <div className="main-content">
         <div className="announcement">
           <marquee behavior="scroll" direction="right">
-            {tournament.headline || `${tournament.name} - کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
+            {tournament.headline || `${tournament.name} - کوٹلہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
             {newsList.map(news => (
                <span key={news._id} style={{ marginLeft: '100px' }}>
                  {news.title}: {news.content}

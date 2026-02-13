@@ -816,7 +816,7 @@ const Tournaments = () => {
                   type="text" 
                   value={formData.headline || ''}
                   onChange={(e) => setFormData({...formData, headline: e.target.value})}
-                  placeholder="e.g. کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز"
+                  placeholder="e.g. کوٹلہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز"
                 />
               </div>
   
