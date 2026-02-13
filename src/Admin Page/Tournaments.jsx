@@ -918,6 +918,11 @@ const Tournaments = () => {
                     className={`tournament-card ${isUserAdmin ? 'my-tournament' : ''}`} 
                     onClick={() => handleEdit(t)}
                   >
+                    {t.posters && t.posters.length > 0 && (
+                      <div className="card-poster-preview">
+                        <img src={t.posters[0]} alt="Tournament Poster" />
+                      </div>
+                    )}
                     <div className="card-top">
                       <span className={`status-badge ${t.status.toLowerCase()}`}>{t.status}</span>
                       <div className="card-icon"><FaTrophy /></div>
