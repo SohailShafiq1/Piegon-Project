@@ -9,6 +9,7 @@ import Contact from './components/Contact';
 import AdminDashboard from './Admin Page/AdminDashboard';
 import Tournaments from './Admin Page/Tournaments';
 import Categories from './Admin Page/Categories';
+import News from './Admin Page/News';
 import AdminLogin from './Admin Page/AdminLogin';
 import ManageAdmins from './Admin Page/ManageAdmins';
 import ManageOwners from './Admin Page/ManageOwners';
@@ -17,11 +18,21 @@ import './App.css';
 function Home() {
   const [activeTournament, setActiveTournament] = useState(null);
   const [activeDateIndex, setActiveDateIndex] = useState(0);
+  const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTournaments = async () => {
+    const fetchData = async () => {
       try {
+        // Fetch News for broadcast
+        try {
+          const newsRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/news`);
+          const newsData = await newsRes.json();
+          setNewsList(newsData.filter(n => n.status === 'Published'));
+        } catch (e) {
+          console.error("News fetch error:", e);
+        }
+
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`);
         const data = await response.json();
         if (data.length > 0) {
@@ -47,11 +58,11 @@ function Home() {
         }
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching tournaments:", error);
+        console.error("Error fetching data:", error);
         setLoading(false);
       }
     };
-    fetchTournaments();
+    fetchData();
   }, []);
 
   if (loading) return <div className="loading-screen">Loading...</div>;
@@ -75,6 +86,11 @@ function Home() {
         <div className="announcement">
           <marquee behavior="scroll" direction="right">
             {activeTournament.headline || `${activeTournament.name} - کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
+            {newsList.map(news => (
+               <span key={news._id} style={{ marginLeft: '100px' }}>
+                 {news.title}: {news.content}
+               </span>
+            ))}
           </marquee>
         </div>
         <StatsBar tournament={activeTournament} dateIndex={activeDateIndex} />
@@ -96,11 +112,21 @@ function TournamentView() {
   const { id } = useParams();
   const [tournament, setTournament] = useState(null);
   const [activeDateIndex, setActiveDateIndex] = useState(0);
+  const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTournament = async () => {
+    const fetchData = async () => {
       try {
+        // Fetch News for broadcast
+        try {
+          const newsRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/news`);
+          const newsData = await newsRes.json();
+          setNewsList(newsData.filter(n => n.status === 'Published'));
+        } catch (e) {
+          console.error("News fetch error:", e);
+        }
+
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${id}`);
         const data = await response.json();
         setTournament(data);
@@ -127,7 +153,7 @@ function TournamentView() {
         setLoading(false);
       }
     };
-    fetchTournament();
+    fetchData();
   }, [id]);
 
   if (loading) return <div className="loading-screen">Loading Tournament Data...</div>;
@@ -143,6 +169,11 @@ function TournamentView() {
         <div className="announcement">
           <marquee behavior="scroll" direction="right">
             {tournament.headline || `${tournament.name} - کڑیانوالہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
+            {newsList.map(news => (
+               <span key={news._id} style={{ marginLeft: '100px' }}>
+                 {news.title}: {news.content}
+               </span>
+            ))}
           </marquee>
         </div>
         <StatsBar tournament={tournament} dateIndex={activeDateIndex} />
@@ -202,7 +233,7 @@ function App() {
             <Route path="tournaments" element={<Tournaments />} />
             <Route path="categories" element={<Categories />} />
             <Route path="owners" element={<ManageOwners />} />
-            <Route path="news" element={<div>News Page (Coming Soon)</div>} />
+            <Route path="news" element={<News />} />
             <Route path="users" element={<ManageAdmins />} />
           </Route>
         </Routes>
