@@ -155,7 +155,7 @@ const ManageOwners = () => {
               <tbody>
                 {filteredOwners.map(owner => (
                   <tr key={owner._id}>
-                    <td>
+                    <td data-label="Photo">
                       <div className="owner-row-img">
                         {owner.image ? (
                           <img src={owner.image} alt={owner.name} />
@@ -166,10 +166,10 @@ const ManageOwners = () => {
                         )}
                       </div>
                     </td>
-                    <td className="owner-row-name">{owner.name}</td>
-                    <td>{owner.phone || '-'}</td>
-                    <td>{owner.address || '-'}</td>
-                    <td>
+                    <td className="owner-row-name" data-label="Name">{owner.name}</td>
+                    <td data-label="Phone">{owner.phone || '-'}</td>
+                    <td data-label="Address">{owner.address || '-'}</td>
+                    <td data-label="Actions">
                       <div className="table-actions">
                         <button className="action-btn edit" onClick={() => {
                           setSelectedOwner(owner);
