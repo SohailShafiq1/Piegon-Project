@@ -39,8 +39,23 @@ const Tournaments = () => {
   const [newParticipant, setNewParticipant] = useState({ name: '', image: '', address: '', phone: '' });
   const [showParticipantForm, setShowParticipantForm] = useState(false);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
+  const [activeDateIndex, setActiveDateIndex] = useState(0); // 0 to numDays-1, or 'total'
+
   const formatPlayerName = (name) => {
-    return name;
+    if (!name) return "";
+    const words = name.split(/\s+/);
+    if (words.length <= 3) return name;
+    
+    // Split long names into two lines to save horizontal space
+    const firstPart = words.slice(0, 3).join(' ');
+    const secondPart = words.slice(3).join(' ');
+    return (
+      <>
+        {firstPart}
+        <br />
+        <span style={{ fontSize: '0.85em', opacity: 0.9 }}>{secondPart}</span>
+      </>
+    );
   };
 
   const handleTimeChange = (participantIndex, pigeonIndex, value) => {

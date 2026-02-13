@@ -22,7 +22,20 @@ const Leaderboard = ({ tournament, dateIndex }) => {
   };
 
   const formatPlayerName = (name) => {
-    return name; // Simply return the name and let CSS handle the professional layout
+    if (!name) return "";
+    const words = name.split(/\s+/);
+    if (words.length <= 3) return name;
+    
+    // Split long names into two lines to save horizontal space
+    const firstPart = words.slice(0, 3).join(' ');
+    const secondPart = words.slice(3).join(' ');
+    return (
+      <>
+        {firstPart}
+        <br />
+        <span style={{ fontSize: '0.85em', opacity: 0.9 }}>{secondPart}</span>
+      </>
+    );
   };
 
   // Sorting: If total view, sort by Grand Total Seconds. If day view, sort by Daily Total Seconds.
