@@ -1228,44 +1228,102 @@
   border-style: dashed;
 }
 
-.date-tabs-container {
+/* Admin Date Selector - Unique to avoid home screen conflict */
+.admin-date-selector {
   display: flex;
-  gap: 8px;
-  margin: 16px 0;
+  gap: 15px;
+  margin: 20px 0;
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding: 20px 15px; /* Side padding prevents clipping of first/last items */
+  border-bottom: 2px solid #edf2f7;
+  background: #fdfdfd;
+  border-radius: 12px;
+  -webkit-overflow-scrolling: touch;
 }
 
-.date-tab {
-  padding: 8px 16px;
+.admin-date-selector::-webkit-scrollbar {
+  height: 8px;
+}
+
+.admin-date-selector::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 10px;
+}
+
+.admin-date-btn {
+  padding: 14px 24px;
   background: white;
-  border: 1px solid #007bff;
-  color: #007bff;
-  border-radius: 4px;
+  border: 2px solid #e2e8f0;
+  color: #4a5568;
+  border-radius: 14px;
   cursor: pointer;
   white-space: nowrap;
-  font-weight: 500;
-  transition: all 0.2s;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 130px;
+  gap: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
 }
 
-.date-tab:hover {
-  background: #f0f7ff;
+.admin-date-btn:hover {
+  border-color: #c9a44c;
+  background: #fffaf0;
+  color: #c9a44c;
+  transform: translateY(-2px);
 }
 
-.date-tab.active {
-  background: #007bff;
+.admin-date-btn.active {
+  background: #c9a44c;
   color: white;
+  border-color: #c9a44c;
+  box-shadow: 0 8px 20px rgba(201, 164, 76, 0.3);
+  transform: translateY(-4px);
 }
 
-.date-tab.total-tab {
-  margin-left: auto;
+.admin-date-btn.total-tab {
   border-color: #28a745;
   color: #28a745;
 }
 
-.date-tab.total-tab.active {
+.admin-date-btn.total-tab.active {
   background: #28a745;
   color: white;
+  border-color: #28a745;
+  box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+}
+
+.tab-label-mini {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  opacity: 0.7;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.date-selection-prompt {
+  padding: 60px 20px;
+  text-align: center;
+  background: #f8fafc;
+  border: 2px dashed #e2e8f0;
+  border-radius: 12px;
+  margin-top: 20px;
+  color: #718096;
+}
+
+.date-selection-prompt h3 {
+  margin: 0 0 10px;
+  color: #1a202c;
+}
+
+.save-btn:disabled, .save-btn.disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .daily-total-cell {

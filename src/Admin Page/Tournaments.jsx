@@ -40,7 +40,7 @@ const Tournaments = () => {
   const [newParticipant, setNewParticipant] = useState({ name: '', image: '', address: '', phone: '' });
   const [showParticipantForm, setShowParticipantForm] = useState(false);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
-  const [activeDateIndex, setActiveDateIndex] = useState(0); // 0 to numDays-1, or 'total'
+  const [activeDateIndex, setActiveDateIndex] = useState(null); // Changed to null: Force date selection
 
   // Global Owners Search State
   const [ownerSearch, setOwnerSearch] = useState('');
@@ -498,144 +498,159 @@ const Tournaments = () => {
                 <p>{formData.name}</p>
               </div>
             </div>
-            <button className="save-btn" onClick={handleSave}>
+            <button 
+              className={`save-btn ${activeDateIndex === null ? 'disabled' : ''}`} 
+              onClick={activeDateIndex !== null ? handleSave : undefined}
+              disabled={activeDateIndex === null}
+            >
               <FaSave /> Save All Times
             </button>
           </div>
 
-          <div className="date-tabs-container">
+          <div className="admin-date-selector">
             {flyingDates.map((date, idx) => (
               <button 
                 key={idx} 
-                className={`date-tab ${activeDateIndex === idx ? 'active' : ''}`}
+                className={`admin-date-btn ${activeDateIndex === idx ? 'active' : ''}`}
                 onClick={() => setActiveDateIndex(idx)}
               >
+                <span className="tab-label-mini">Day {idx + 1}</span>
                 {new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
               </button>
             ))}
             <button 
-              className={`date-tab total-tab ${activeDateIndex === 'total' ? 'active' : ''}`}
+              className={`admin-date-btn total-tab ${activeDateIndex === 'total' ? 'active' : ''}`}
               onClick={() => setActiveDateIndex('total')}
             >
-              Tournament Summary
+              <span className="tab-label-mini">Overall</span>
+              Summary
             </button>
           </div>
 
-          {(() => {
-            const winners = calculateWinners(formData.participants, formData.startTime, activeDateIndex, totalPigeonsPerDay);
-            if (!winners.firstWinner && !winners.lastWinner) return null;
+          {activeDateIndex === null ? (
+            <div className="date-selection-prompt">
+              <h3><FaCalendarAlt /> Select a Date</h3>
+              <p>Please select a flying date above to view and manage pigeon landing times.</p>
+            </div>
+          ) : (
+            <>
+              {(() => {
+                const winners = calculateWinners(formData.participants, formData.startTime, activeDateIndex, totalPigeonsPerDay);
+                if (!winners.firstWinner && !winners.lastWinner) return null;
 
-            return (
-              <div className="winners-snapshot">
-                {winners.firstWinner && (
-                  <div className="winner-badge first">
-                    <span className="label">
-                      {activeDateIndex === 'total' ? 'Overall First Winner:' : `Day ${activeDateIndex + 1} First Winner:`}
-                    </span>
-                    <span className="name">{winners.firstWinner}</span>
+                return (
+                  <div className="winners-snapshot">
+                    {winners.firstWinner && (
+                      <div className="winner-badge first">
+                        <span className="label">
+                          {activeDateIndex === 'total' ? 'Overall First Winner:' : `Day ${activeDateIndex + 1} First Winner:`}
+                        </span>
+                        <span className="name">{winners.firstWinner}</span>
+                      </div>
+                    )}
+                    {winners.lastWinner && (
+                      <div className="winner-badge last">
+                        <span className="label">
+                          {activeDateIndex === 'total' ? 'Overall Last Winner:' : `Day ${activeDateIndex + 1} Last Winner:`}
+                        </span>
+                        <span className="name">{winners.lastWinner}</span>
+                      </div>
+                    )}
                   </div>
-                )}
-                {winners.lastWinner && (
-                  <div className="winner-badge last">
-                    <span className="label">
-                      {activeDateIndex === 'total' ? 'Overall Last Winner:' : `Day ${activeDateIndex + 1} Last Winner:`}
-                    </span>
-                    <span className="name">{winners.lastWinner}</span>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-  
-          <div className="table-responsive">
-            <table className="time-table">
-              <thead>
-                <tr>
-                  <th>Sr.</th>
-                  <th>Name</th>
-                  {activeDateIndex !== 'total' && <th>Start Time</th>}
-                  {activeDateIndex === 'total' ? (
-                    flyingDates.map((date, idx) => (
-                      <th key={idx}>{new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</th>
-                    ))
-                  ) : (
-                    [...Array(totalPigeonsPerDay)].map((_, i) => (
-                      <th key={i} className={i < (formData.helperPigeons || 0) ? 'helper-header' : ''}>
-                        pigeon {i + 1}
-                        {i < (formData.helperPigeons || 0) && <div className="helper-badge">Helper</div>}
-                      </th>
-                    ))
-                  )}
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {formData.participants && formData.participants.length > 0 ? (
-                  formData.participants.map((p, pIndex) => (
-                    <tr key={pIndex}>
-                      <td className="sr-cell">{pIndex + 1}</td>
-                      <td className="participant-name-cell">
-                        <div className="participant-row-info">
-                          <img src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" />
-                          <span className="p-name-table">{formatPlayerName(p.name)}</span>
-                        </div>
-                      </td>
-                      
-                      {activeDateIndex !== 'total' ? (
-                        <>
-                          <td className="start-time-cell">{formData.startTime}</td>
-                          {[...Array(totalPigeonsPerDay)].map((_, i) => {
-                            const isHelper = i < (formData.helperPigeons || 0);
-                            const globalPigeonIdx = (activeDateIndex * totalPigeonsPerDay) + i;
-                            return (
-                              <td key={i} className={`time-input-cell ${isHelper ? 'helper-pigeon-cell' : ''}`}>
-                                <input 
-                                  type="time" 
-                                  value={p.pigeonTimes && p.pigeonTimes[globalPigeonIdx] ? p.pigeonTimes[globalPigeonIdx] : ''}
-                                  onChange={(e) => {
-                                    handleTimeChange(pIndex, globalPigeonIdx, e.target.value);
-                                  }}
-                                  title={isHelper ? 'Helper Pigeon (Not counted in total)' : ''}
-                                />
-                              </td>
-                            );
-                          })}
-                          <td className="total-time-cell">
-                            {calculateTotalTime(
-                              formData.startTime, 
-                              (p.pigeonTimes || []).slice(activeDateIndex * totalPigeonsPerDay, (activeDateIndex + 1) * totalPigeonsPerDay), 
-                              formData.numPigeons || 0
-                            )}
-                          </td>
-                        </>
+                );
+              })()}
+      
+              <div className="table-responsive">
+                <table className="time-table">
+                  <thead>
+                    <tr>
+                      <th>Sr.</th>
+                      <th>Name</th>
+                      {activeDateIndex !== 'total' && <th>Start Time</th>}
+                      {activeDateIndex === 'total' ? (
+                        flyingDates.map((date, idx) => (
+                          <th key={idx}>{new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</th>
+                        ))
                       ) : (
-                        <>
-                          {flyingDates.map((_, idx) => (
-                            <td key={idx} className="daily-total-cell">
-                              {calculateTotalTime(
-                                formData.startTime, 
-                                (p.pigeonTimes || []).slice(idx * totalPigeonsPerDay, (idx + 1) * totalPigeonsPerDay), 
-                                formData.numPigeons || 0
-                                )}
-                            </td>
-                          ))}
-                          <td className="grand-total-cell">
-                            {calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, formData.numPigeons || 0)}
-                          </td>
-                        </>
+                        [...Array(totalPigeonsPerDay)].map((_, i) => (
+                          <th key={i} className={i < (formData.helperPigeons || 0) ? 'helper-header' : ''}>
+                            pigeon {i + 1}
+                            {i < (formData.helperPigeons || 0) && <div className="helper-badge">Helper</div>}
+                          </th>
+                        ))
                       )}
+                      <th>Total</th>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={totalPigeonsPerDay + 4} className="no-data">
-                      No participants added yet.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody>
+                    {formData.participants && formData.participants.length > 0 ? (
+                      formData.participants.map((p, pIndex) => (
+                        <tr key={pIndex}>
+                          <td className="sr-cell">{pIndex + 1}</td>
+                          <td className="participant-name-cell">
+                            <div className="participant-row-info">
+                              <img src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" />
+                              <span className="p-name-table">{formatPlayerName(p.name)}</span>
+                            </div>
+                          </td>
+                          
+                          {activeDateIndex !== 'total' ? (
+                            <>
+                              <td className="start-time-cell">{formData.startTime}</td>
+                              {[...Array(totalPigeonsPerDay)].map((_, i) => {
+                                const isHelper = i < (formData.helperPigeons || 0);
+                                const globalPigeonIdx = (activeDateIndex * totalPigeonsPerDay) + i;
+                                return (
+                                  <td key={i} className={`time-input-cell ${isHelper ? 'helper-pigeon-cell' : ''}`}>
+                                    <input 
+                                      type="time" 
+                                      value={p.pigeonTimes && p.pigeonTimes[globalPigeonIdx] ? p.pigeonTimes[globalPigeonIdx] : ''}
+                                      onChange={(e) => {
+                                        handleTimeChange(pIndex, globalPigeonIdx, e.target.value);
+                                      }}
+                                      title={isHelper ? 'Helper Pigeon (Not counted in total)' : ''}
+                                    />
+                                  </td>
+                                );
+                              })}
+                              <td className="total-time-cell">
+                                {calculateTotalTime(
+                                  formData.startTime, 
+                                  (p.pigeonTimes || []).slice(activeDateIndex * totalPigeonsPerDay, (activeDateIndex + 1) * totalPigeonsPerDay), 
+                                  formData.numPigeons || 0
+                                )}
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              {flyingDates.map((_, idx) => (
+                                <td key={idx} className="daily-total-cell">
+                                  {calculateTotalTime(
+                                    formData.startTime, 
+                                    (p.pigeonTimes || []).slice(idx * totalPigeonsPerDay, (idx + 1) * totalPigeonsPerDay), 
+                                    formData.numPigeons || 0
+                                    )}
+                                </td>
+                              ))}
+                              <td className="grand-total-cell">
+                                {calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, formData.numPigeons || 0)}
+                              </td>
+                            </>
+                          )}
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={totalPigeonsPerDay + 4} className="no-data">
+                          No participants added yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </div>
       );
     }
