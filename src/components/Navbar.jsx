@@ -10,8 +10,8 @@ const Navbar = () => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`);
         const data = await response.json();
-        // Only show tournaments intended for public view
-        setTournaments(data.filter(t => t.showOnHome !== false));
+        // Only show tournaments intended for public view AND currently Active
+        setTournaments(data.filter(t => t.status === 'Active' && t.showOnHome !== false));
       } catch (error) {
         console.error("Error fetching tournaments for navbar:", error);
       }

@@ -116,6 +116,17 @@ function TournamentView() {
   const [activeDateIndex, setActiveDateIndex] = useState(0);
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const copyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Copy failed', err);
+    }
+  }; 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -178,6 +189,13 @@ function TournamentView() {
             ))}
           </marquee>
         </div>
+
+        <div className="tournament-actions">
+          <button className="copy-url-button" onClick={copyUrl}>
+            {copied ? 'Copied!' : 'Copy URL'}
+          </button>
+        </div>
+
         <StatsBar tournament={tournament} dateIndex={activeDateIndex} />
         <DateTabs 
           dates={flyingDates} 

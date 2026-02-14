@@ -38,3 +38,25 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* Tournament page: copy button */
+.tournament-actions {
+  margin: 12px 0;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-right: 10px;
+}
+
+.copy-url-button {
+  background: #2b7cff;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 150ms ease;
+}
+.copy-url-button:hover { background: #245ec4; }
+.copy-url-button:active { transform: translateY(1px); }
