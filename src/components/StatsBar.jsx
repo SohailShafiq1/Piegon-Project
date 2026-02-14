@@ -7,7 +7,7 @@ const StatsBar = ({ tournament, dateIndex }) => {
   const participants = tournament.participants || [];
   const numPigeons = tournament.numPigeons || 0;
   const helperPigeons = tournament.helperPigeons || 0;
-  const totalPigeonsPerDay = numPigeons + helperPigeons;
+  const totalPigeonsPerDay = numPigeons;
   const totalDays = tournament.numDays || 1;
 
   let totalPigeonsCount = 0;

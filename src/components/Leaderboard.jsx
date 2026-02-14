@@ -12,7 +12,7 @@ const Leaderboard = ({ tournament, dateIndex }) => {
   if (!tournament) return null;
 
   const { participants = [], startTime, numPigeons, helperPigeons, numDays } = tournament;
-  const pigeonsPerDay = (numPigeons || 0) + (helperPigeons || 0);
+  const pigeonsPerDay = numPigeons || 0;
 
   // Helper to strip seconds from HH:MM:SS strings
   const formatDisplayTime = (timeStr) => {
@@ -63,13 +63,17 @@ const Leaderboard = ({ tournament, dateIndex }) => {
           {winners.firstWinner && (
             <div className="winner-tag first">
               <span className="label">{dateIndex === 'total' ? 'Overall First Winner' : `Day ${dateIndex + 1} First Winner`}</span>
-              <span className="name">{winners.firstWinner}</span>
+              <span className="name">
+                {winners.firstWinner} {winners.firstTime && `- ${winners.firstTime}`}
+              </span>
             </div>
           )}
           {winners.lastWinner && (
             <div className="winner-tag last">
               <span className="label">{dateIndex === 'total' ? 'Overall Last Winner' : `Day ${dateIndex + 1} Last Winner`}</span>
-              <span className="name">{winners.lastWinner}</span>
+              <span className="name">
+                {winners.lastWinner} {winners.lastTime && `- ${winners.lastTime}`}
+              </span>
             </div>
           )}
         </div>

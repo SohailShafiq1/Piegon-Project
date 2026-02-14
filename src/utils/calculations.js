@@ -96,6 +96,11 @@ export const calculateWinners = (participants, startTime, dateIndex = null, pige
       }
     });
 
-    return { firstWinner: firstWinnerName, lastWinner: lastWinnerName };
+    return { 
+      firstWinner: firstWinnerName, 
+      firstTime: latestFirstElapsed >= 0 ? formatTime(latestFirstElapsed) : "",
+      lastWinner: lastWinnerName,
+      lastTime: latestLastElapsed >= 0 ? formatTime(latestLastElapsed) : ""
+    };
 };
 

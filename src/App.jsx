@@ -42,7 +42,7 @@ function Home() {
           setActiveTournament(active);
 
           // Default to the last date that has entered data
-          const pigeonsPerDay = (active.numPigeons || 0) + (active.helperPigeons || 0);
+          const pigeonsPerDay = active.numPigeons || 0;
           const numDays = active.flyingDates?.length || 0;
           let lastActiveIdx = 0;
           for (let d = numDays - 1; d >= 0; d--) {
@@ -145,7 +145,7 @@ function TournamentView() {
         setTournament(data);
 
         // Default to the last date that has entered data
-        const pigeonsPerDay = (data.numPigeons || 0) + (data.helperPigeons || 0);
+        const pigeonsPerDay = data.numPigeons || 0;
         const numDays = data.flyingDates?.length || 0;
         let lastActiveIdx = 0;
         for (let d = numDays - 1; d >= 0; d--) {

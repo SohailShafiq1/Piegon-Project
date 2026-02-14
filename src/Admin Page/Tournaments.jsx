@@ -33,7 +33,9 @@ const Tournaments = () => {
     headline: '',
     participants: [],
     firstWinner: '',
-    lastWinner: ''
+    firstTime: '',
+    lastWinner: '',
+    lastTime: ''
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -113,7 +115,7 @@ const Tournaments = () => {
     // Recalculate grand total time
     updatedParticipant.totalTime = calculateGrandTotal(
       updatedParticipant.pigeonTimes,
-      (formData.numPigeons || 0) + (formData.helperPigeons || 0),
+      formData.numPigeons || 0,
       formData.startTime,
       formData.numDays || 1,
       formData.numPigeons || 0
@@ -123,13 +125,15 @@ const Tournaments = () => {
     updatedParticipants[participantIndex] = updatedParticipant;
 
     // Recalculate First and Last Winners
-    const { firstWinner, lastWinner } = calculateWinners(updatedParticipants, formData.startTime);
+    const { firstWinner, firstTime, lastWinner, lastTime } = calculateWinners(updatedParticipants, formData.startTime);
 
     setFormData({ 
       ...formData, 
       participants: updatedParticipants,
       firstWinner,
-      lastWinner
+      firstTime,
+      lastWinner,
+      lastTime
     });
   };
 
@@ -312,7 +316,9 @@ const Tournaments = () => {
       headline: t.headline || '',
       participants: t.participants || [],
       firstWinner: t.firstWinner || '',
-      lastWinner: t.lastWinner || ''
+      firstTime: t.firstTime || '',
+      lastWinner: t.lastWinner || '',
+      lastTime: t.lastTime || ''
     });
     setView('edit');
   };
@@ -355,14 +361,14 @@ const Tournaments = () => {
         flyingDates.push(nextDate);
     }
 
-    const totalPigeonsPerDay = (formData.numPigeons || 0) + (formData.helperPigeons || 0);
+    const totalPigeonsPerDay = formData.numPigeons || 0;
     const updatedParticipants = (formData.participants || []).map(p => ({
         ...p,
         totalTime: calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, formData.numPigeons || 0)
     }));
 
     // Recalculate winners one last time before saving
-    const { firstWinner, lastWinner } = calculateWinners(updatedParticipants, formData.startTime);
+    const { firstWinner, firstTime, lastWinner, lastTime } = calculateWinners(updatedParticipants, formData.startTime);
 
     // Calculate daily winners for each date
     const dailyWinners = flyingDates.map((date, idx) => {
@@ -370,7 +376,9 @@ const Tournaments = () => {
       return {
         date,
         firstWinner: winners.firstWinner,
-        lastWinner: winners.lastWinner
+        firstTime: winners.firstTime,
+        lastWinner: winners.lastWinner,
+        lastTime: winners.lastTime
       };
     });
 
@@ -378,9 +386,12 @@ const Tournaments = () => {
         ...formData,
         participants: updatedParticipants,
         firstWinner,
+        firstTime,
         lastWinner,
+        lastTime,
         dailyWinners,
-        totalPigeons: totalPigeonsPerDay,
+        // Store `totalPigeons` as the number of scoring pigeons (numPigeons), helpers remain separate
+        totalPigeons: formData.numPigeons || 0,
         flyingDates
     };
 
@@ -486,7 +497,7 @@ const Tournaments = () => {
 
   const renderView = () => {
     if (view === 'time-entry') {
-      const totalPigeonsPerDay = (formData.numPigeons || 0) + (formData.helperPigeons || 0);
+      const totalPigeonsPerDay = formData.numPigeons || 0;
       const flyingDates = formData.flyingDates || [];
   
       return (
@@ -546,7 +557,9 @@ const Tournaments = () => {
                         <span className="label">
                           {activeDateIndex === 'total' ? 'Overall First Winner:' : `Day ${activeDateIndex + 1} First Winner:`}
                         </span>
-                        <span className="name">{winners.firstWinner}</span>
+                        <span className="name">
+                          {winners.firstWinner} {winners.firstTime && `(${winners.firstTime})`}
+                        </span>
                       </div>
                     )}
                     {winners.lastWinner && (
@@ -554,7 +567,9 @@ const Tournaments = () => {
                         <span className="label">
                           {activeDateIndex === 'total' ? 'Overall Last Winner:' : `Day ${activeDateIndex + 1} Last Winner:`}
                         </span>
-                        <span className="name">{winners.lastWinner}</span>
+                        <span className="name">
+                          {winners.lastWinner} {winners.lastTime && `(${winners.lastTime})`}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -574,9 +589,8 @@ const Tournaments = () => {
                         ))
                       ) : (
                         [...Array(totalPigeonsPerDay)].map((_, i) => (
-                          <th key={i} className={i < (formData.helperPigeons || 0) ? 'helper-header' : ''}>
+                          <th key={i}>
                             pigeon {i + 1}
-                            {i < (formData.helperPigeons || 0) && <div className="helper-badge">Helper</div>}
                           </th>
                         ))
                       )}
@@ -599,17 +613,15 @@ const Tournaments = () => {
                             <>
                               <td className="start-time-cell">{formData.startTime}</td>
                               {[...Array(totalPigeonsPerDay)].map((_, i) => {
-                                const isHelper = i < (formData.helperPigeons || 0);
                                 const globalPigeonIdx = (activeDateIndex * totalPigeonsPerDay) + i;
                                 return (
-                                  <td key={i} className={`time-input-cell ${isHelper ? 'helper-pigeon-cell' : ''}`}>
+                                  <td key={i} className="time-input-cell">
                                     <input 
                                       type="time" 
                                       value={p.pigeonTimes && p.pigeonTimes[globalPigeonIdx] ? p.pigeonTimes[globalPigeonIdx] : ''}
                                       onChange={(e) => {
                                         handleTimeChange(pIndex, globalPigeonIdx, e.target.value);
                                       }}
-                                      title={isHelper ? 'Helper Pigeon (Not counted in total)' : ''}
                                     />
                                   </td>
                                 );
@@ -779,11 +791,11 @@ const Tournaments = () => {
                 <label>Total Pigeons (Auto)</label>
                 <input 
                   type="number" 
-                  value={(formData.numPigeons || 0) + (formData.helperPigeons || 0)}
+                  value={formData.numPigeons || 0}
                   readOnly
                   className="readonly-input"
                 />
-                <small>Sum of Pigeons + Helpers</small>
+                <small>Number of scoring pigeons (helpers excluded)</small>
               </div>
   
               <div className="form-group">
@@ -1033,7 +1045,10 @@ const Tournaments = () => {
                         </div>
                         <div className="detail-item">
                           <FaDove className="detail-icon" />
-                        <span>{t.totalPigeons || (t.numPigeons + t.helperPigeons)} Pigeons</span>
+                          <span>
+                            {t.numPigeons || t.totalPigeons || 0} Pigeons
+                            {t.helperPigeons ? ` / ${t.helperPigeons} Helpers` : null}
+                          </span>
                         </div>
                         <div className="detail-item">
                           <FaClock className="detail-icon" />
@@ -1043,8 +1058,16 @@ const Tournaments = () => {
                       
                       {(t.firstWinner || t.lastWinner) && (
                         <div className="card-winners-mini">
-                          {t.firstWinner && <div className="winner-small-badge first">1st: {t.firstWinner}</div>}
-                          {t.lastWinner && <div className="winner-small-badge last">Last: {t.lastWinner}</div>}
+                          {t.firstWinner && (
+                            <div className="winner-small-badge first">
+                              1st: {t.firstWinner} {t.firstTime && `(${t.firstTime})`}
+                            </div>
+                          )}
+                          {t.lastWinner && (
+                            <div className="winner-small-badge last">
+                              Last: {t.lastWinner} {t.lastTime && `(${t.lastTime})`}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
