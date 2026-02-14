@@ -53,17 +53,22 @@
   .winners-banner {
     gap: 4px;
     padding: 4px 2px;
+    flex-wrap: wrap; /* Allow wrapping on small screens if needed */
   }
   .winner-tag {
     padding: 2px 6px;
     gap: 3px;
+    flex: 1 1 auto; /* Allow tags to distribute space */
   }
   .winner-tag .label {
     font-size: 0.6rem;
   }
   .winner-tag .name {
     font-size: 0.65rem;
-    max-width: 60px; /* Prevent long names from pushing out the other winner */
+    max-width: none; /* Remove restrictive max-width */
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal; /* Allow name and time to potentially wrap if very long */
   }
 }
 

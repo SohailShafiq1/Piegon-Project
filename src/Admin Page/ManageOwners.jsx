@@ -51,6 +51,22 @@ const ManageOwners = () => {
     e.preventDefault();
     if (!formData.name) return;
 
+    // Check for duplicates
+    const isDuplicate = owners.some(owner => {
+      if (selectedOwner && owner._id === selectedOwner._id) return false;
+      return owner.name.toLowerCase().replace(/\s+/g, '') === formData.name.toLowerCase().replace(/\s+/g, '');
+    });
+
+    if (isDuplicate) {
+      setModalContent({
+        title: "Duplicate Record",
+        message: "یہ شخص پہلے ہی شامل ہے۔",
+        onConfirm: null
+      });
+      setModalOpen(true);
+      return;
+    }
+
     const token = localStorage.getItem('adminToken');
     const method = selectedOwner ? 'PUT' : 'POST';
     const url = selectedOwner 
@@ -256,14 +272,10 @@ const ManageOwners = () => {
         isOpen={modalOpen} 
         onClose={() => setModalOpen(false)}
         title={modalContent.title}
+        message={modalContent.message}
         confirmText={modalContent.confirmText}
-        onConfirm={() => {
-          if (modalContent.onConfirm) modalContent.onConfirm();
-          setModalOpen(false);
-        }}
-      >
-        <p>{modalContent.message}</p>
-      </Modal>
+        onConfirm={modalContent.onConfirm}
+      />
     </div>
   );
 };

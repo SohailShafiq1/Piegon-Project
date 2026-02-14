@@ -176,6 +176,21 @@ const Tournaments = () => {
       return;
     }
 
+    // Check for duplicates
+    const isDuplicate = (formData.participants || []).some(p => 
+      p.name.toLowerCase().replace(/\s+/g, '') === newParticipant.name.toLowerCase().replace(/\s+/g, '')
+    );
+
+    if (isDuplicate) {
+      setModalContent({
+        title: "Validation Error",
+        message: "یہ شخص پہلے ہی شامل ہے۔",
+        onConfirm: null
+      });
+      setModalOpen(true);
+      return;
+    }
+
     const updatedParticipants = [...(formData.participants || []), newParticipant];
     const updatedFormData = { ...formData, participants: updatedParticipants };
 
