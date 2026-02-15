@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Banner from './components/Banner';
 import Footer from './components/Footer';
@@ -66,7 +66,9 @@ const LeagueView = () => {
                 <div className="league-tournament-body">
                   <div className="league-tournament-right">
                     <div className="league-tournament-info">
-                      <h3 className="tournament-name-blue">{t.name}</h3>
+                      <Link to={`/tournament/${t._id}`} style={{ textDecoration: 'none' }}>
+                        <h3 className="tournament-name-blue">{t.name}</h3>
+                      </Link>
                       <p className="tournament-dates-mini">
                         {new Date(t.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - 
                         {new Date(t.flyingDates?.[t.flyingDates.length - 1] || t.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

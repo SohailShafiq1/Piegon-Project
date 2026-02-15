@@ -102,6 +102,29 @@
   padding-left: 10px;
 }
 
+/* Blinking Winning Time Effect: 2s Blue, 2s White */
+@keyframes blink-winner {
+  0%, 50% { background-color: #17a2b8; color: white; }
+  51%, 100% { background-color: transparent; color: inherit; }
+}
+
+.winning-time-cell {
+  animation: blink-winner 4s infinite;
+  font-weight: 800 !important;
+  position: relative;
+}
+
+.winning-time-cell::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-shadow: inset 0 0 10px rgba(255,255,255,0.3);
+  pointer-events: none;
+}
+
 .leaderboard-table td {
   padding: 6px 4px;
   border: 1px solid #edf2f7;

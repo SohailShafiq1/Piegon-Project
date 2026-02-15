@@ -14,11 +14,10 @@ const Leaderboard = ({ tournament, dateIndex }) => {
   const { participants = [], startTime, numPigeons, helperPigeons, numDays } = tournament;
   const pigeonsPerDay = numPigeons || 0;
 
-  // Helper to strip seconds from HH:MM:SS strings
+  // Helper to show HH:MM:SS strings
   const formatDisplayTime = (timeStr) => {
     if (!timeStr || timeStr === '-') return '-';
-    const parts = timeStr.split(':');
-    return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeStr;
+    return timeStr;
   };
 
   const formatPlayerName = (name) => {
@@ -112,7 +111,22 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                 {dateIndex !== 'total' ? (
                   [...Array(pigeonsPerDay)].map((_, pIdx) => {
                     const time = p.pigeonTimes[dateIndex * pigeonsPerDay + pIdx];
-                    return <td key={pIdx}>{formatDisplayTime(time)}</td>;
+                    
+                    // Logic for blinking winning time
+                    let cellClass = "";
+                    if (time && time !== '-' && dateIndex !== 'total') {
+                       const dayTimes = p.pigeonTimes.slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay).filter(t => t && t !== '');
+                       const isFirst = time === dayTimes[0];
+                       const isLast = time === dayTimes[dayTimes.length - 1];
+
+                       if (isFirst && p.name === winners.firstWinner && time === winners.firstTime) {
+                         cellClass = "winning-time-cell";
+                       } else if (isLast && p.name === winners.lastWinner && time === winners.lastTime) {
+                         cellClass = "winning-time-cell";
+                       }
+                    }
+
+                    return <td key={pIdx} className={cellClass}>{formatDisplayTime(time)}</td>;
                   })
                 ) : (
                   tournament.flyingDates.map((_, dIdx) => (

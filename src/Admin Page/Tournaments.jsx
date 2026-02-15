@@ -196,7 +196,18 @@ const Tournaments = () => {
       return;
     }
 
-    const updatedParticipants = [...(formData.participants || []), newParticipant];
+    // Initialize pigeonTimes for the new participant
+    const totalPigeons = (formData.numPigeons || 0);
+    const totalDays = (formData.numDays || 1);
+    const initialTimes = Array(totalPigeons * totalDays).fill('');
+    
+    const participantWithTimes = {
+      ...newParticipant,
+      pigeonTimes: initialTimes,
+      totalTime: "00:00:00"
+    };
+
+    const updatedParticipants = [...(formData.participants || []), participantWithTimes];
     const updatedFormData = { ...formData, participants: updatedParticipants };
 
     // Update local state

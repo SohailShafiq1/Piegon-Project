@@ -101,6 +101,17 @@
   color: #4a5568;
 }
 
+/* Winning Total Blink Effect: 2s Blue, 2s White */
+@keyframes blink-winner {
+  0%, 50% { background-color: #17a2b8; color: white; }
+  51%, 100% { background-color: transparent; color: inherit; }
+}
+
+.winning-total-blink {
+  font-weight: 800 !important;
+  animation: blink-winner 4s infinite;
+}
+
 .photo-cell {
   width: 45px;
 }
