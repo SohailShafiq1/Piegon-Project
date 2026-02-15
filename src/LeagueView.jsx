@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { FaLink } from 'react-icons/fa';
 import Navbar from './components/Navbar';
 import Banner from './components/Banner';
 import Footer from './components/Footer';
@@ -35,6 +36,21 @@ const LeagueView = () => {
     fetchLeagueTournaments();
   }, [leagueName]);
 
+  const handleCopyLink = (tournamentId, e) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/tournament/${tournamentId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      const target = e.currentTarget;
+      const originalContent = target.innerHTML;
+      target.innerHTML = 'Copied!';
+      target.classList.add('copied');
+      setTimeout(() => {
+        target.innerHTML = originalContent;
+        target.classList.remove('copied');
+      }, 2000);
+    });
+  };
+
   const formatPlayerName = (name) => {
     if (!name) return "";
     const words = name.split(/\s+/);
@@ -66,9 +82,17 @@ const LeagueView = () => {
                 <div className="league-tournament-body">
                   <div className="league-tournament-right">
                     <div className="league-tournament-info">
-                      <Link to={`/tournament/${t._id}`} style={{ textDecoration: 'none' }}>
-                        <h3 className="tournament-name-blue">{t.name}</h3>
-                      </Link>
+                      <div className="tournament-header-row">
+                        <Link to={`/tournament/${t._id}`} style={{ textDecoration: 'none' }}>
+                          <h3 className="tournament-name-blue">{t.name}</h3>
+                        </Link>
+                        <button 
+                          className="league-copy-btn" 
+                          onClick={(e) => handleCopyLink(t._id, e)}
+                        >
+                          <FaLink /> Copy Link
+                        </button>
+                      </div>
                       <p className="tournament-dates-mini">
                         {new Date(t.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - 
                         {new Date(t.flyingDates?.[t.flyingDates.length - 1] || t.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

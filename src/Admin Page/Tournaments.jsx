@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaTrophy, FaUserShield, FaArrowLeft, FaSave, FaTrash, FaImage, FaCalendarAlt, FaClock, FaDove, FaUserPlus, FaUserFriends, FaEdit, FaUsers, FaMapMarkerAlt, FaPhone } from 'react-icons/fa';
+import { FaPlus, FaTrophy, FaUserShield, FaArrowLeft, FaSave, FaTrash, FaImage, FaCalendarAlt, FaClock, FaDove, FaUserPlus, FaUserFriends, FaEdit, FaUsers, FaMapMarkerAlt, FaPhone, FaLink } from 'react-icons/fa';
 import Modal from '../components/Modal';
 import '../styles/Modal.css';
 import './Tournaments.css';
@@ -87,6 +87,21 @@ const Tournaments = () => {
     });
     setOwnerSearch(owner.name);
     setShowOwnerSuggestions(false);
+  };
+
+  const handleCopyLink = (tournamentId, e) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/tournament/${tournamentId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      const target = e.currentTarget;
+      const originalContent = target.innerHTML;
+      target.innerHTML = 'Copied!';
+      target.classList.add('copied');
+      setTimeout(() => {
+        target.innerHTML = originalContent;
+        target.classList.remove('copied');
+      }, 2000);
+    });
   };
 
   const formatPlayerName = (name) => {
@@ -1251,6 +1266,13 @@ const Tournaments = () => {
                     className={`tournament-card ${isUserAdmin ? 'my-tournament' : ''}`} 
                     onClick={() => handleEdit(t)}
                   >
+                    <button 
+                      className="copy-link-btn" 
+                      onClick={(e) => handleCopyLink(t._id, e)}
+                      title="Copy Tournament Link"
+                    >
+                      <FaLink /> Copy Link
+                    </button>
                     {t.posters && t.posters.length > 0 && (
                       <div className="card-poster-preview">
                         <img src={t.posters[0]} alt="Tournament Poster" />

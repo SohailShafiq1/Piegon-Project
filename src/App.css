@@ -60,3 +60,50 @@ body {
 }
 .copy-url-button:hover { background: #245ec4; }
 .copy-url-button:active { transform: translateY(1px); }
+
+/* Improved Copy Link Styling */
+.copy-link-container {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+  padding: 0 1rem;
+}
+
+.main-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px;
+  background-color: white;
+  color: #1a202c;
+  border: 1.5px solid #edf2f7;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.main-copy-btn:hover {
+  border-color: #c9a44c;
+  color: #c9a44c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(201, 164, 76, 0.15);
+}
+
+.main-copy-btn .link-icon {
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+.main-copy-btn:hover .link-icon {
+  transform: rotate(-15deg);
+}
+
+.main-copy-btn.copied {
+  background-color: #059669;
+  border-color: #059669;
+  color: white;
+  box-shadow: 0 4px 15px rgba(5, 150, 105, 0.25);
+}

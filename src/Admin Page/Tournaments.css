@@ -333,6 +333,41 @@
   border: 1px solid #edf2f7;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.copy-link-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 20;
+  background: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1a202c;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  border: 1.5px solid #edf2f7;
+}
+
+.copy-link-btn:hover {
+  background: white;
+  color: #c9a44c;
+  border-color: #c9a44c;
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(201, 164, 76, 0.2);
+}
+
+.copy-link-btn.copied {
+  background: #059669;
+  color: white;
+  border-color: #059669;
 }
 
 .tournament-card:hover {

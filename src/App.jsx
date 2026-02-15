@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useParams } from 'react-router-dom';
+import { FaLink } from 'react-icons/fa';
 import Navbar from './components/Navbar';
 import Banner from './components/Banner';
 import StatsBar from './components/StatsBar';
@@ -22,6 +23,19 @@ function Home() {
   const [activeDateIndex, setActiveDateIndex] = useState(0);
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const copyUrl = async () => {
+    if (!activeTournament) return;
+    try {
+      const url = `${window.location.origin}/tournament/${activeTournament._id}`;
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Copy failed', err);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -95,6 +109,17 @@ function Home() {
             ))}
           </marquee>
         </div>
+
+        <div className="copy-link-container">
+          <button 
+            onClick={copyUrl}
+            className={`main-copy-btn ${copied ? 'copied' : ''}`}
+          >
+            <FaLink className="link-icon" /> 
+            <span>{copied ? 'Link Copied!' : 'Copy Tournament Link'}</span>
+          </button>
+        </div>
+        
         <StatsBar tournament={activeTournament} dateIndex={activeDateIndex} />
         <DateTabs 
           dates={flyingDates} 
@@ -189,6 +214,16 @@ function TournamentView() {
                </span>
             ))}
           </marquee>
+        </div>
+
+        <div className="copy-link-container">
+          <button 
+            onClick={copyUrl}
+            className={`main-copy-btn ${copied ? 'copied' : ''}`}
+          >
+            <FaLink className="link-icon" /> 
+            <span>{copied ? 'Link Copied!' : 'Copy Tournament Link'}</span>
+          </button>
         </div>
 
         <StatsBar tournament={tournament} dateIndex={activeDateIndex} />
