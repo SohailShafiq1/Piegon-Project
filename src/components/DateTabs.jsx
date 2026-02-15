@@ -16,7 +16,7 @@ const DateTabs = ({ dates = [], activeDateIndex, onDateChange }) => {
               className={`date-tab ${activeDateIndex === idx ? 'active' : ''}`}
               onClick={() => onDateChange(idx)}
             >
-              <span className="tab-year">{year}-</span>
+              <span className="tab-year">{year}</span>
               <span className="tab-date">{month}-{day}</span>
             </button>
           );
@@ -25,7 +25,7 @@ const DateTabs = ({ dates = [], activeDateIndex, onDateChange }) => {
           className={`date-tab total-tab ${activeDateIndex === 'total' ? 'active' : ''}`}
           onClick={() => onDateChange('total')}
         >
-          Total
+          <span className="total-text">Total</span>
         </button>
       </div>
     </div>

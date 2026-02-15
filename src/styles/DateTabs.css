@@ -1,44 +1,39 @@
 .date-tabs-container {
   display: flex;
-  justify-content: flex-start; /* Aling to start for scrolling */
-  padding: 5px 0;
+  justify-content: center;
+  padding: 2px 0;
   background-color: #fff;
   margin-bottom: 5px;
   width: 100%;
-  overflow-x: auto; /* Enable horizontal scroll */
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
-}
-
-.date-tabs-container::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
+  overflow: hidden; /* No scroll bar */
 }
 
 .date-tabs {
   display: flex;
-  flex-wrap: nowrap; /* Force one line */
+  flex-wrap: nowrap;
   gap: 0;
   border: 1px solid #004a99;
   border-radius: 4px;
-  margin: 0 auto; /* Center if it fits, scroll if it doesn't */
-  min-width: max-content; /* Ensure container expands to fit all tabs */
+  width: 100%; /* Use full width */
+  box-sizing: border-box;
 }
 
 .date-tab {
-  padding: 8px 12px;
+  flex: 1; 
+  padding: 4px 0.5px; /* Extremely tight padding */
   border: none;
   background-color: white;
   color: #004a99;
   cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 700;
   transition: all 0.2s;
   border-right: 1px solid #004a99;
-  white-space: nowrap; /* Prevent date text wrapping */
+  white-space: nowrap;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-width: 0; 
+  overflow: hidden; /* Prevent text overflow */
 }
 
 .date-tab:last-child {
@@ -51,21 +46,38 @@
 }
 
 .tab-year {
-  font-size: 0.7rem;
-  opacity: 0.9;
+  font-size: 0.55rem; /* Tiny year */
+  opacity: 0.8;
   line-height: 1;
+  display: block;
 }
 
 .tab-date {
-  font-size: 0.9rem;
+  font-size: 0.65rem; /* Small date */
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.1;
+  display: block;
 }
 
 .total-tab {
-  font-size: 1rem;
   font-weight: 800;
-  padding: 0 15px;
+  padding: 0;
+  text-transform: uppercase;
+  flex: 1.4; /* Increased space for "TOTAL" word */
+}
+
+.total-text {
+  font-size: 0.65rem;
+  line-height: 2.2; /* Center vertically since it lacks the year span */
+}
+
+@media (max-width: 480px) {
+  .date-tab {
+    padding: 2px 0;
+  }
+  .tab-year { font-size: 0.45rem; }
+  .tab-date { font-size: 0.55rem; }
+  .total-text { font-size: 0.55rem; }
 }
 
 .date-tab:hover:not(.active) {
