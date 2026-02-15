@@ -24,30 +24,30 @@
 .nav-links {
   list-style: none;
   display: flex;
-  flex-wrap: wrap; /* Allow wrapping */
+  flex-wrap: wrap; /* Allow wrapping for many leagues */
   justify-content: center;
-  gap: 4px 8px; /* Compact horizontal and vertical gap */
+  gap: 8px 12px; /* Better spacing between links */
   padding: 0;
-  margin: 5px 0;
+  margin: 10px 0;
+  width: 100%;
 }
 
 .nav-links li {
-  flex: 0 0 calc(16.66% - 8px); /* Aim for 6 per line on desktop */
   min-width: fit-content;
 }
 
 .nav-links li a, .contact-nav-button {
   color: white;
   text-decoration: none;
-  font-size: 0.7rem; /* Reduced font size as requested earlier */
-  font-weight: normal;
+  font-size: 0.85rem; /* Increased slightly from 0.7 for readability */
+  font-weight: 600;
   display: block;
 }
 
 .contact-nav-button {
   background-color: #ffffff;
   color: #004a99 !important;
-  padding: 4px 12px;
+  padding: 5px 15px; /* Slightly larger button */
   border-radius: 4px;
   font-weight: bold;
   transition: background 0.2s;
@@ -59,7 +59,7 @@
 
 .current-users {
   position: absolute;
-  top: 5px; /* Moved to top right to save space */
+  top: 5px;
   right: 5px;
   background-color: #003366;
   color: white;
@@ -68,12 +68,6 @@
   font-size: 0.7rem;
   font-weight: bold;
   z-index: 10;
-}
-
-@media (max-width: 480px) {
-  .nav-links li {
-    flex: 0 0 calc(33.33% - 8px); /* 3 per line on small mobile to keep it readable */
-  }
 }
 
 @media (min-width: 769px) {

@@ -11,6 +11,9 @@ const Tournaments = () => {
   const [view, setView] = useState('list'); // 'list' or 'edit'
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [leagues, setLeagues] = useState([]);
+  const [showLeagueModal, setShowLeagueModal] = useState(false);
+  const [leagueFormData, setLeagueFormData] = useState({ name: '', description: '' });
   
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -20,6 +23,7 @@ const Tournaments = () => {
 
   const initialFormState = {
     name: '',
+    leagueName: 'Independent',
     admin: currentUser?.id || '',
     startDate: new Date().toISOString().split('T')[0],
     startTime: '06:00',
@@ -252,10 +256,45 @@ const Tournaments = () => {
 
   useEffect(() => {
     fetchTournaments();
+    fetchLeagues();
     if (currentUser?.role === 'Super Admin') {
       fetchAdmins();
     }
   }, []);
+
+  const fetchLeagues = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/leagues`);
+      const data = await response.json();
+      setLeagues(data);
+    } catch (error) {
+      console.error("Error fetching leagues:", error);
+    }
+  };
+
+  const handleCreateLeague = async (e) => {
+    if (e) e.preventDefault();
+    if (!leagueFormData.name) return;
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/leagues`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(leagueFormData)
+      });
+      if (response.ok) {
+        fetchLeagues();
+        setShowLeagueModal(false);
+        setLeagueFormData({ name: '', description: '' });
+      }
+    } catch (error) {
+      console.error("Error creating league:", error);
+    }
+  };
 
   const fetchTournaments = async () => {
     const token = localStorage.getItem('adminToken');
@@ -737,6 +776,21 @@ const Tournaments = () => {
                   required
                 />
               </div>
+
+              <div className="form-group">
+                <label>League Name (Grouping Name)</label>
+                <select 
+                  value={formData.leagueName}
+                  onChange={(e) => setFormData({...formData, leagueName: e.target.value})}
+                  required
+                >
+                  <option value="Independent">Independent (No League)</option>
+                  {(leagues || []).map(league => (
+                    <option key={league._id} value={league.name}>{league.name}</option>
+                  ))}
+                </select>
+                <small>Select "Independent" if this doesn't belong to a specific league.</small>
+              </div>
   
                 {currentUser?.role === 'Super Admin' && (
                   <div className="form-group">
@@ -1029,9 +1083,14 @@ const Tournaments = () => {
             <p>View and manage all your pigeon flying tournaments</p>
           </div>
           {currentUser?.role === 'Super Admin' && (
-            <button className="add-btn" onClick={handleCreateNew}>
-              <FaPlus /> New Tournament
-            </button>
+            <div className="admin-actions">
+              <button className="add-btn league-btn" onClick={() => setShowLeagueModal(true)}>
+                <FaPlus /> Create a League
+              </button>
+              <button className="add-btn" onClick={handleCreateNew}>
+                <FaPlus /> New Tournament
+              </button>
+            </div>
           )}
         </div>
   
@@ -1124,6 +1183,41 @@ const Tournaments = () => {
         onConfirm={modalContent.onConfirm}
         confirmText={modalContent.confirmText}
       />
+
+      {showLeagueModal && (
+        <div className="custom-modal-overlay">
+          <div className="custom-modal-content league-modal">
+            <div className="modal-header">
+              <h3>Create New League</h3>
+              <button className="close-btn" onClick={() => setShowLeagueModal(false)}>&times;</button>
+            </div>
+            <form onSubmit={handleCreateLeague}>
+              <div className="form-group">
+                <label>League Name</label>
+                <input 
+                  type="text" 
+                  value={leagueFormData.name} 
+                  onChange={(e) => setLeagueFormData({...leagueFormData, name: e.target.value})}
+                  required 
+                  placeholder="e.g. Asia Cup, World League"
+                />
+              </div>
+              <div className="form-group">
+                <label>Description (Optional)</label>
+                <textarea 
+                  value={leagueFormData.description} 
+                  onChange={(e) => setLeagueFormData({...leagueFormData, description: e.target.value})}
+                  placeholder="Enter league details..."
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn-secondary" onClick={() => setShowLeagueModal(false)}>Cancel</button>
+                <button type="submit" className="btn-primary">Create League</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 };

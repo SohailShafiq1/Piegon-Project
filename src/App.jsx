@@ -14,6 +14,7 @@ import News from './Admin Page/News';
 import AdminLogin from './Admin Page/AdminLogin';
 import ManageAdmins from './Admin Page/ManageAdmins';
 import ManageOwners from './Admin Page/ManageOwners';
+import LeagueView from './LeagueView';
 import './App.css';
 
 function Home() {
@@ -265,6 +266,7 @@ function App() {
       <div className="app-container">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/league/:leagueName" element={<LeagueView />} />
           <Route path="/tournament/:id" element={<TournamentView />} />
           <Route path="/contact" element={
             <>

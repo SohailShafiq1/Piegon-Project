@@ -42,7 +42,7 @@ export const calculateTotalSeconds = (startTime, pigeonTimes, scoringCount = 0) 
 
 export const calculateTotalTime = (startTime, pigeonTimes, scoringCount = 0) => {
     const totalSeconds = calculateTotalSeconds(startTime, pigeonTimes, scoringCount);
-    return formatTime(totalSeconds, false);
+    return formatTime(totalSeconds, true);
 };
 
 export const calculateGrandTotalSeconds = (pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons) => {
@@ -56,7 +56,7 @@ export const calculateGrandTotalSeconds = (pigeonTimes, pigeonsPerDay, startTime
 
 export const calculateGrandTotal = (pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons) => {
     const totalSeconds = calculateGrandTotalSeconds(pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons);
-    return formatTime(totalSeconds, false);
+    return formatTime(totalSeconds, true);
 };
 
 export const calculateWinners = (participants, startTime, dateIndex = null, pigeonsPerDay = 0) => {

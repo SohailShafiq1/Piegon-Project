@@ -3,15 +3,32 @@ import { Link } from 'react-router-dom';
 import '../styles/Navbar.css';
 
 const Navbar = () => {
-  const [tournaments, setTournaments] = useState([]);
+  const [leagues, setLeagues] = useState([]);
+  const [hasIndependent, setHasIndependent] = useState(false);
 
   useEffect(() => {
     const fetchTournaments = async () => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`);
         const data = await response.json();
-        // Only show tournaments intended for public view AND currently Active
-        setTournaments(data.filter(t => t.status === 'Active' && t.showOnHome !== false));
+        // Filter active tournaments
+        const activeTournaments = data.filter(t => t.status === 'Active' && t.showOnHome !== false);
+        
+        // Find leagues (excluding Independent)
+        const leagueSet = new Set();
+        let independentFound = false;
+
+        activeTournaments.forEach(t => {
+          const lName = t.leagueName || 'Independent';
+          if (lName === 'Independent' || lName === 'General') {
+            independentFound = true;
+          } else {
+            leagueSet.add(lName);
+          }
+        });
+
+        setLeagues(Array.from(leagueSet));
+        setHasIndependent(independentFound);
       } catch (error) {
         console.error("Error fetching tournaments for navbar:", error);
       }
@@ -24,15 +41,22 @@ const Navbar = () => {
       <div className="nav-container">
         <Link to="/" className="nav-brand">kotlapigeon</Link>
         <ul className="nav-links">
-          {tournaments.length > 0 ? (
-            tournaments.map((t) => (
-              <li key={t._id}>
-                <Link to={`/tournament/${t._id}`}>{t.name}</Link>
-              </li>
-            ))
-          ) : (
+          {leagues.map((league) => (
+            <li key={league}>
+              <Link to={`/league/${encodeURIComponent(league)}`}>{league}</Link>
+            </li>
+          ))}
+          
+          {hasIndependent && (
+            <li>
+              <Link to="/league/Independent">Others</Link>
+            </li>
+          )}
+
+          {!leagues.length && !hasIndependent && (
             <li><span className="no-tournaments-nav">No Active Clubs</span></li>
           )}
+          
           <li>
             <Link to="/contact" className="contact-nav-button">Contact</Link>
           </li>

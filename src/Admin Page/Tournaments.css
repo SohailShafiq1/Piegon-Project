@@ -94,6 +94,87 @@
   color: #a0aec0;
 }
 
+.admin-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.league-btn {
+  background-color: #065e34 !important; /* Professional Green */
+}
+
+/* League Modal Custom Styles */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.custom-modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.league-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #f7fafc;
+  padding-bottom: 15px;
+}
+
+.league-modal .modal-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #1a202c;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.btn-primary {
+  background-color: #c9a44c;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: #edf2f7;
+  color: #4a5568;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .admin-actions {
+    flex-direction: column;
+  }
+}
+
 .add-btn, .create-btn {
   background-color: #c9a44c;
   color: white;
