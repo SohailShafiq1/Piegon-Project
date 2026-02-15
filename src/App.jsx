@@ -191,12 +191,6 @@ function TournamentView() {
           </marquee>
         </div>
 
-        <div className="tournament-actions">
-          <button className="copy-url-button" onClick={copyUrl}>
-            {copied ? 'Copied!' : 'Copy URL'}
-          </button>
-        </div>
-
         <StatsBar tournament={tournament} dateIndex={activeDateIndex} />
         <DateTabs 
           dates={flyingDates} 
