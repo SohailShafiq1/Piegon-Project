@@ -62,8 +62,10 @@ export const calculateGrandTotal = (pigeonTimes, pigeonsPerDay, startTime, numDa
 export const calculateWinners = (participants, startTime, dateIndex = null, pigeonsPerDay = 0) => {
     let latestFirstElapsed = -1;
     let firstWinnerName = "";
+    let firstLandTimeStr = "";
     let latestLastElapsed = -1;
     let lastWinnerName = "";
+    let lastLandTimeStr = "";
 
     const startSeconds = getSeconds(startTime || '06:00');
 
@@ -76,31 +78,35 @@ export const calculateWinners = (participants, startTime, dateIndex = null, pige
       }
       
       if (relevantTimes.length > 0) {
-        let firstLandSeconds = getSeconds(relevantTimes[0]);
+        const firstTimeStr = relevantTimes[0];
+        let firstLandSeconds = getSeconds(firstTimeStr);
         if (firstLandSeconds < startSeconds) firstLandSeconds += 24 * 3600;
         const firstElapsed = firstLandSeconds - startSeconds;
         
         if (firstElapsed > latestFirstElapsed) {
           latestFirstElapsed = firstElapsed;
           firstWinnerName = p.name;
+          firstLandTimeStr = firstTimeStr;
         }
 
-        let lastLandSeconds = getSeconds(relevantTimes[relevantTimes.length - 1]);
+        const lastTimeStr = relevantTimes[relevantTimes.length - 1];
+        let lastLandSeconds = getSeconds(lastTimeStr);
         if (lastLandSeconds < startSeconds) lastLandSeconds += 24 * 3600;
         const lastElapsed = lastLandSeconds - startSeconds;
 
         if (lastElapsed > latestLastElapsed) {
           latestLastElapsed = lastElapsed;
           lastWinnerName = p.name;
+          lastLandTimeStr = lastTimeStr;
         }
       }
     });
 
     return { 
       firstWinner: firstWinnerName, 
-      firstTime: latestFirstElapsed >= 0 ? formatTime(latestFirstElapsed) : "",
+      firstTime: latestFirstElapsed >= 0 ? firstLandTimeStr : "",
       lastWinner: lastWinnerName,
-      lastTime: latestLastElapsed >= 0 ? formatTime(latestLastElapsed) : ""
+      lastTime: latestLastElapsed >= 0 ? lastLandTimeStr : ""
     };
 };
 

@@ -13,7 +13,7 @@ const DateTabs = ({ dates = [], activeDateIndex, onDateChange }) => {
             className={`date-tab ${activeDateIndex === idx ? 'active' : ''}`}
             onClick={() => onDateChange(idx)}
           >
-            {new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+            {new Date(date).toISOString().split('T')[0]}
           </button>
         ))}
         <button

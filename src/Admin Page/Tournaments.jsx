@@ -346,14 +346,7 @@ const Tournaments = () => {
 
   const handleSave = (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    
-    setModalContent({
-      title: 'Confirm Save',
-      message: 'Are you sure you want to save these changes?',
-      confirmText: 'Save Now',
-      onConfirm: () => performSave()
-    });
-    setModalOpen(true);
+    performSave();
   };
 
   const performSave = async () => {
@@ -443,12 +436,7 @@ const Tournaments = () => {
         
         fetchTournaments();
         
-        setModalContent({
-          title: 'Success',
-          message: 'Tournament data saved successfully!',
-          onConfirm: null
-        });
-        setModalOpen(true);
+        // Success popup removed as per user request
       } else {
         // Handle non-JSON error responses (like 413 Payload Too Large HTML)
         const contentType = response.headers.get("content-type");
@@ -522,7 +510,18 @@ const Tournaments = () => {
               <button className="back-btn" onClick={() => setView('edit')}><FaArrowLeft /> Back to Edit</button>
               <div className="header-text-mini">
                 <h2>Pigeon Landing Times</h2>
-                <p>{formData.name}</p>
+                <div className="tournament-info-bar">
+                  <p>{formData.name}</p>
+                  <div className="start-time-global-edit">
+                    <FaClock />
+                    <span>Tournament Start Time:</span>
+                    <input 
+                      type="time" 
+                      value={formData.startTime}
+                      onChange={(e) => setFormData({...formData, startTime: e.target.value})}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             <button 
@@ -542,7 +541,7 @@ const Tournaments = () => {
                 onClick={() => setActiveDateIndex(idx)}
               >
                 <span className="tab-label-mini">Day {idx + 1}</span>
-                {new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                {new Date(date).toISOString().split('T')[0]}
               </button>
             ))}
             <button 
@@ -560,124 +559,135 @@ const Tournaments = () => {
               <p>Please select a flying date above to view and manage pigeon landing times.</p>
             </div>
           ) : (
-            <>
-              {(() => {
-                const winners = calculateWinners(formData.participants, formData.startTime, activeDateIndex, totalPigeonsPerDay);
-                if (!winners.firstWinner && !winners.lastWinner) return null;
-
-                return (
-                  <div className="winners-snapshot">
-                    {winners.firstWinner && (
-                      <div className="winner-badge first">
-                        <span className="label">
-                          {activeDateIndex === 'total' ? 'Overall First Winner:' : `Day ${activeDateIndex + 1} First Winner:`}
-                        </span>
-                        <span className="name">
-                          {winners.firstWinner} {winners.firstTime && `(${winners.firstTime})`}
-                        </span>
-                      </div>
-                    )}
-                    {winners.lastWinner && (
-                      <div className="winner-badge last">
-                        <span className="label">
-                          {activeDateIndex === 'total' ? 'Overall Last Winner:' : `Day ${activeDateIndex + 1} Last Winner:`}
-                        </span>
-                        <span className="name">
-                          {winners.lastWinner} {winners.lastTime && `(${winners.lastTime})`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-      
-              <div className="table-responsive">
-                <table className="time-table">
-                  <thead>
-                    <tr>
-                      <th>Sr.</th>
-                      <th>Name</th>
-                      {activeDateIndex !== 'total' && <th>Start Time</th>}
-                      {activeDateIndex === 'total' ? (
-                        flyingDates.map((date, idx) => (
-                          <th key={idx}>{new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</th>
-                        ))
-                      ) : (
-                        [...Array(totalPigeonsPerDay)].map((_, i) => (
-                          <th key={i}>
-                            pigeon {i + 1}
-                          </th>
-                        ))
+            (() => {
+              const winners = calculateWinners(formData.participants, formData.startTime, activeDateIndex, totalPigeonsPerDay);
+              return (
+                <>
+                  {(winners.firstWinner || winners.lastWinner) && (
+                    <div className="winners-snapshot">
+                      {winners.firstWinner && (
+                        <div className="winner-badge first">
+                          <span className="label">
+                            {activeDateIndex === 'total' ? 'Overall First Winner:' : `Day ${activeDateIndex + 1} First Winner:`}
+                          </span>
+                          <span className="name">
+                            {winners.firstWinner} {winners.firstTime && `(${winners.firstTime})`}
+                          </span>
+                        </div>
                       )}
-                      <th>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {formData.participants && formData.participants.length > 0 ? (
-                      formData.participants.map((p, pIndex) => (
-                        <tr key={pIndex}>
-                          <td className="sr-cell">{pIndex + 1}</td>
-                          <td className="participant-name-cell">
-                            <div className="participant-row-info">
-                              <img src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" />
-                              <span className="p-name-table">{formatPlayerName(p.name)}</span>
-                            </div>
-                          </td>
-                          
-                          {activeDateIndex !== 'total' ? (
-                            <>
-                              <td className="start-time-cell">{formData.startTime}</td>
-                              {[...Array(totalPigeonsPerDay)].map((_, i) => {
-                                const globalPigeonIdx = (activeDateIndex * totalPigeonsPerDay) + i;
-                                return (
-                                  <td key={i} className="time-input-cell">
+                      {winners.lastWinner && (
+                        <div className="winner-badge last">
+                          <span className="label">
+                            {activeDateIndex === 'total' ? 'Overall Last Winner:' : `Day ${activeDateIndex + 1} Last Winner:`}
+                          </span>
+                          <span className="name">
+                            {winners.lastWinner} {winners.lastTime && `(${winners.lastTime})`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+        
+                  <div className="table-responsive">
+                    <table className="time-table">
+                      <thead>
+                        <tr>
+                          <th>Sr.</th>
+                          <th>Name</th>
+                          {activeDateIndex !== 'total' && <th>Start Time</th>}
+                          {activeDateIndex === 'total' ? (
+                            flyingDates.map((date, idx) => (
+                              <th key={idx}>{new Date(date).toISOString().split('T')[0]}</th>
+                            ))
+                          ) : (
+                            [...Array(totalPigeonsPerDay)].map((_, i) => (
+                              <th key={i}>
+                                pigeon {i + 1}
+                              </th>
+                            ))
+                          )}
+                          <th>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {formData.participants && formData.participants.length > 0 ? (
+                          formData.participants.map((p, pIndex) => (
+                            <tr key={pIndex}>
+                              <td className="sr-cell">{pIndex + 1}</td>
+                              <td className="participant-name-cell">
+                                <div className="participant-row-info">
+                                  <img src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" />
+                                  <span className="p-name-table">{formatPlayerName(p.name)}</span>
+                                </div>
+                              </td>
+                              
+                              {activeDateIndex !== 'total' ? (
+                                <>
+                                  <td className="start-time-cell">
                                     <input 
                                       type="time" 
-                                      value={p.pigeonTimes && p.pigeonTimes[globalPigeonIdx] ? p.pigeonTimes[globalPigeonIdx] : ''}
-                                      onChange={(e) => {
-                                        handleTimeChange(pIndex, globalPigeonIdx, e.target.value);
-                                      }}
+                                      value={formData.startTime}
+                                      onChange={(e) => setFormData({...formData, startTime: e.target.value})}
+                                      className="start-time-table-input"
                                     />
                                   </td>
-                                );
-                              })}
-                              <td className="total-time-cell">
-                                {calculateTotalTime(
-                                  formData.startTime, 
-                                  (p.pigeonTimes || []).slice(activeDateIndex * totalPigeonsPerDay, (activeDateIndex + 1) * totalPigeonsPerDay), 
-                                  formData.numPigeons || 0
-                                )}
-                              </td>
-                            </>
-                          ) : (
-                            <>
-                              {flyingDates.map((_, idx) => (
-                                <td key={idx} className="daily-total-cell">
-                                  {calculateTotalTime(
-                                    formData.startTime, 
-                                    (p.pigeonTimes || []).slice(idx * totalPigeonsPerDay, (idx + 1) * totalPigeonsPerDay), 
-                                    formData.numPigeons || 0
+                                  {[...Array(totalPigeonsPerDay)].map((_, i) => {
+                                    const globalPigeonIdx = (activeDateIndex * totalPigeonsPerDay) + i;
+                                    return (
+                                      <td key={i} className="time-input-cell">
+                                        <input 
+                                          type="time" 
+                                          value={p.pigeonTimes && p.pigeonTimes[globalPigeonIdx] ? p.pigeonTimes[globalPigeonIdx] : ''}
+                                          onChange={(e) => {
+                                            handleTimeChange(pIndex, globalPigeonIdx, e.target.value);
+                                          }}
+                                        />
+                                      </td>
+                                    );
+                                  })}
+                                  <td className="total-time-cell">
+                                    {calculateTotalTime(
+                                      formData.startTime, 
+                                      (p.pigeonTimes || []).slice(activeDateIndex * totalPigeonsPerDay, (activeDateIndex + 1) * totalPigeonsPerDay), 
+                                      formData.numPigeons || 0
                                     )}
-                                </td>
-                              ))}
-                              <td className="grand-total-cell">
-                                {calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, formData.numPigeons || 0)}
-                              </td>
-                            </>
-                          )}
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={totalPigeonsPerDay + 4} className="no-data">
-                          No participants added yet.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </>
+                                  </td>
+                                </>
+                              ) : (
+                                <>
+                                  {flyingDates.map((_, idx) => {
+                                     // For total view, we don't highlight individual boxes easily here 
+                                     // as it's a summary of daily totals
+                                     return (
+                                      <td key={idx} className="daily-total-cell">
+                                        {calculateTotalTime(
+                                          formData.startTime, 
+                                          (p.pigeonTimes || []).slice(idx * totalPigeonsPerDay, (idx + 1) * totalPigeonsPerDay), 
+                                          formData.numPigeons || 0
+                                          )}
+                                      </td>
+                                     )
+                                  })}
+                                  <td className="grand-total-cell">
+                                    {calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, formData.numPigeons || 0)}
+                                  </td>
+                                </>
+                              )}
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={totalPigeonsPerDay + 4} className="no-data">
+                              No participants added yet.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              );
+            })()
           )}
         </div>
       );
@@ -1056,7 +1066,7 @@ const Tournaments = () => {
                         </div>
                         <div className="detail-item">
                           <FaCalendarAlt className="detail-icon" />
-                        <span>{t.startDate ? new Date(t.startDate).toLocaleDateString() : 'No date'} {t.startTime || ''}</span>
+                        <span>{t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : 'No date'} {t.startTime || ''}</span>
                         </div>
                         <div className="detail-item">
                           <FaDove className="detail-icon" />

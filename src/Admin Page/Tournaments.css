@@ -1070,6 +1070,45 @@
   color: #718096;
 }
 
+.tournament-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 4px;
+}
+
+.start-time-global-edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.start-time-global-edit svg {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.start-time-global-edit span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.start-time-global-edit input {
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #2563eb;
+  padding: 0;
+  outline: none;
+  cursor: pointer;
+}
+
 .add-time-btn {
   background-color: #4a5568;
   color: white;
@@ -1202,6 +1241,26 @@
 .start-time-cell {
   color: #718096;
   font-family: monospace;
+}
+
+.start-time-table-input {
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 0.85rem;
+  color: #2b6cb0;
+  font-weight: 600;
+  background-color: #f0f7ff;
+  width: 90px;
+  outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.start-time-table-input:focus {
+  border-color: #3182ce;
+  background-color: white;
+  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.1);
 }
 
 .helper-badge {
