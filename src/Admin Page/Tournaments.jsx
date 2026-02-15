@@ -13,7 +13,7 @@ const Tournaments = () => {
   const [loading, setLoading] = useState(true);
   const [leagues, setLeagues] = useState([]);
   const [showLeagueModal, setShowLeagueModal] = useState(false);
-  const [leagueFormData, setLeagueFormData] = useState({ name: '', description: '' });
+  const [leagueFormData, setLeagueFormData] = useState({ name: '', description: '', admin: '' });
   const [editingLeague, setEditingLeague] = useState(null);
   
   // Modal state
@@ -305,7 +305,7 @@ const Tournaments = () => {
       if (response.ok) {
         fetchLeagues();
         setShowLeagueModal(false);
-        setLeagueFormData({ name: '', description: '' });
+        setLeagueFormData({ name: '', description: '', admin: '' });
         setEditingLeague(null);
       }
     } catch (error) {
@@ -339,7 +339,11 @@ const Tournaments = () => {
 
   const handleEditLeague = (league) => {
     setEditingLeague(league);
-    setLeagueFormData({ name: league.name, description: league.description || '' });
+    setLeagueFormData({ 
+      name: league.name, 
+      description: league.description || '',
+      admin: league.admin?._id || league.admin || ''
+    });
     setShowLeagueModal(true);
   };
 
@@ -353,12 +357,22 @@ const Tournaments = () => {
       });
       const data = await response.json();
       
-      // Sort tournaments: User's assigned tournaments first
+      // Sort tournaments: User's assigned tournaments first (or their league's tournaments)
       const sortedTournaments = [...data].sort((a, b) => {
         const isAAdmin = (a.admin?._id || a.admin) === currentUser?.id;
         const isBAdmin = (b.admin?._id || b.admin) === currentUser?.id;
-        if (isAAdmin && !isBAdmin) return -1;
-        if (!isAAdmin && isBAdmin) return 1;
+        
+        const leagueA = leagues.find(l => l.name === a.leagueName);
+        const leagueB = leagues.find(l => l.name === b.leagueName);
+        
+        const isALeagueAdmin = (leagueA?.admin?._id || leagueA?.admin) === currentUser?.id;
+        const isBLeagueAdmin = (leagueB?.admin?._id || leagueB?.admin) === currentUser?.id;
+
+        const isAOwner = isAAdmin || isALeagueAdmin;
+        const isBOwner = isBAdmin || isBLeagueAdmin;
+
+        if (isAOwner && !isBOwner) return -1;
+        if (!isAOwner && isBOwner) return 1;
         return 0;
       });
 
@@ -396,11 +410,15 @@ const Tournaments = () => {
   const handleEdit = (t) => {
     const isAssignedAdmin = (t.admin?._id || t.admin) === currentUser?.id;
     const isSuperAdmin = currentUser?.role === 'Super Admin';
+    
+    // Check if user is the League Admin for this tournament
+    const relatedLeague = leagues.find(l => l.name === t.leagueName);
+    const isLeagueAdmin = (relatedLeague?.admin?._id || relatedLeague?.admin) === currentUser?.id;
 
-    if (!isAssignedAdmin && !isSuperAdmin) {
+    if (!isAssignedAdmin && !isSuperAdmin && !isLeagueAdmin) {
       setModalContent({
         title: 'Access Denied',
-        message: 'You are not an admin for this tournament.',
+        message: 'You are not an admin for this tournament or its league.',
         onConfirm: null
       });
       setModalOpen(true);
@@ -1153,6 +1171,9 @@ const Tournaments = () => {
                     <div key={league._id} className="manage-league-card">
                       <div className="manage-league-info">
                         <h3>{league.name}</h3>
+                        <div className="league-admin-badge" style={{ fontSize: '0.8rem', color: '#065e34', marginBottom: '8px', fontWeight: 'bold' }}>
+                          <FaUserShield /> Admin: {league.admin?.name || 'Super Admin Only'}
+                        </div>
                         <p>{league.description || "No description"}</p>
                         <div className="league-stats-mini">
                           <strong>{leagueTournaments.length}</strong> Tournaments
@@ -1175,7 +1196,7 @@ const Tournaments = () => {
 
                       <div className="manage-league-actions">
                         <button className="edit-btn" onClick={() => handleEditLeague(league)}>
-                          <FaEdit /> Edit Name
+                          <FaEdit /> Edit League
                         </button>
                         <button className="delete-btn-league" onClick={() => handleDeleteLeague(league._id)}>
                           <FaTrash /> Delete
@@ -1315,10 +1336,26 @@ const Tournaments = () => {
               <button className="close-btn" onClick={() => {
                 setShowLeagueModal(false);
                 setEditingLeague(null);
-                setLeagueFormData({ name: '', description: '' });
+                setLeagueFormData({ name: '', description: '', admin: '' });
               }}>&times;</button>
             </div>
             <form onSubmit={handleCreateLeague}>
+              {currentUser?.role === 'Super Admin' && (
+                <div className="form-group">
+                  <label>Assign League Admin</label>
+                  <select 
+                    value={leagueFormData.admin}
+                    onChange={(e) => setLeagueFormData({...leagueFormData, admin: e.target.value})}
+                  >
+                    <option value="">No Admin assigned (Super Admin only)</option>
+                    {admins.map(admin => (
+                      <option key={admin._id || admin.id} value={admin._id || admin.id}>
+                        {admin.name} ({admin.role})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="form-group">
                 <label>League Name</label>
                 <input 
