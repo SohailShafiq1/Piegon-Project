@@ -7,15 +7,20 @@ const DateTabs = ({ dates = [], activeDateIndex, onDateChange }) => {
   return (
     <div className="date-tabs-container">
       <div className="date-tabs">
-        {dates.map((date, idx) => (
-          <button
-            key={idx}
-            className={`date-tab ${activeDateIndex === idx ? 'active' : ''}`}
-            onClick={() => onDateChange(idx)}
-          >
-            {new Date(date).toISOString().split('T')[0]}
-          </button>
-        ))}
+        {dates.map((date, idx) => {
+          const dateStr = new Date(date).toISOString().split('T')[0];
+          const [year, month, day] = dateStr.split('-');
+          return (
+            <button
+              key={idx}
+              className={`date-tab ${activeDateIndex === idx ? 'active' : ''}`}
+              onClick={() => onDateChange(idx)}
+            >
+              <span className="tab-year">{year}-</span>
+              <span className="tab-date">{month}-{day}</span>
+            </button>
+          );
+        })}
         <button
           className={`date-tab total-tab ${activeDateIndex === 'total' ? 'active' : ''}`}
           onClick={() => onDateChange('total')}
