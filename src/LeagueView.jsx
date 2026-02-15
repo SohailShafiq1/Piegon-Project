@@ -82,17 +82,9 @@ const LeagueView = () => {
                 <div className="league-tournament-body">
                   <div className="league-tournament-right">
                     <div className="league-tournament-info">
-                      <div className="tournament-header-row">
-                        <Link to={`/tournament/${t._id}`} style={{ textDecoration: 'none' }}>
-                          <h3 className="tournament-name-blue">{t.name}</h3>
-                        </Link>
-                        <button 
-                          className="league-copy-btn" 
-                          onClick={(e) => handleCopyLink(t._id, e)}
-                        >
-                          <FaLink /> Copy Link
-                        </button>
-                      </div>
+                      <Link to={`/tournament/${t._id}`} style={{ textDecoration: 'none' }}>
+                        <h3 className="tournament-name-blue">{t.name}</h3>
+                      </Link>
                       <p className="tournament-dates-mini">
                         {new Date(t.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - 
                         {new Date(t.flyingDates?.[t.flyingDates.length - 1] || t.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

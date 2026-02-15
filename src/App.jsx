@@ -109,16 +109,6 @@ function Home() {
           </marquee>
         </div>
 
-        <div className="copy-link-container">
-          <button 
-            onClick={copyUrl}
-            className={`main-copy-btn ${copied ? 'copied' : ''}`}
-          >
-            <FaLink className="link-icon" /> 
-            <span>{copied ? 'Link Copied!' : 'Copy Tournament Link'}</span>
-          </button>
-        </div>
-        
         <StatsBar tournament={activeTournament} dateIndex={activeDateIndex} />
         <DateTabs 
           dates={flyingDates} 
@@ -206,22 +196,14 @@ function TournamentView() {
       <div className="main-content">
         <div className="announcement">
           <marquee behavior="scroll" direction="right">
+              {activeTournament.headline || ` - کوٹلہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
+           
             {newsList.map(news => (
                <span key={news._id} style={{ marginLeft: '100px' }}>
                  {news.title}: {news.content}
                </span>
             ))}
           </marquee>
-        </div>
-
-        <div className="copy-link-container">
-          <button 
-            onClick={copyUrl}
-            className={`main-copy-btn ${copied ? 'copied' : ''}`}
-          >
-            <FaLink className="link-icon" /> 
-            <span>{copied ? 'Link Copied!' : 'Copy Tournament Link'}</span>
-          </button>
         </div>
 
         <StatsBar tournament={tournament} dateIndex={activeDateIndex} />
