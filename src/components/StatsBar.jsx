@@ -65,7 +65,6 @@ const StatsBar = ({ tournament, dateIndex }) => {
 
   return (
     <div className="stats-container">
-      <h2 className="title-urdu">{tournament.name}</h2>
       <p className="start-time">Start time : {formatDisplayTime(tournament.startTime)}</p>
       
       <div className="stats-box">
