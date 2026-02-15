@@ -7,33 +7,28 @@ const Navbar = () => {
   const [hasIndependent, setHasIndependent] = useState(false);
 
   useEffect(() => {
-    const fetchTournaments = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`);
-        const data = await response.json();
-        // Filter active tournaments
-        const activeTournaments = data.filter(t => t.status === 'Active' && t.showOnHome !== false);
+        // Fetch all leagues
+        const leagueRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/leagues`);
+        const allLeagues = await leagueRes.json();
+        setLeagues(allLeagues.map(l => l.name));
+
+        // Fetch tournaments to see if we have independent ones
+        const tourneyRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`);
+        const allTournaments = await tourneyRes.json();
         
-        // Find leagues (excluding Independent)
-        const leagueSet = new Set();
-        let independentFound = false;
-
-        activeTournaments.forEach(t => {
-          const lName = t.leagueName || 'Independent';
-          if (lName === 'Independent' || lName === 'General') {
-            independentFound = true;
-          } else {
-            leagueSet.add(lName);
-          }
-        });
-
-        setLeagues(Array.from(leagueSet));
+        const activeTournaments = allTournaments.filter(t => t.status === 'Active' && t.showOnHome !== false);
+        const independentFound = activeTournaments.some(t => 
+          !t.leagueName || t.leagueName === 'Independent' || t.leagueName === 'General'
+        );
+        
         setHasIndependent(independentFound);
       } catch (error) {
-        console.error("Error fetching tournaments for navbar:", error);
+        console.error("Error fetching navbar data:", error);
       }
     };
-    fetchTournaments();
+    fetchData();
   }, []);
 
   return (

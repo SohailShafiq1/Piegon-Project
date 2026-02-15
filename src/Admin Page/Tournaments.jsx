@@ -14,6 +14,7 @@ const Tournaments = () => {
   const [leagues, setLeagues] = useState([]);
   const [showLeagueModal, setShowLeagueModal] = useState(false);
   const [leagueFormData, setLeagueFormData] = useState({ name: '', description: '' });
+  const [editingLeague, setEditingLeague] = useState(null);
   
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -31,7 +32,7 @@ const Tournaments = () => {
     numPigeons: 0,
     noteTimePigeons: 0,
     helperPigeons: 0,
-    status: 'Upcoming',
+    status: 'Active',
     showOnHome: true,
     posters: [],
     headline: '',
@@ -278,8 +279,12 @@ const Tournaments = () => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/leagues`, {
-        method: 'POST',
+      const url = editingLeague 
+        ? `${import.meta.env.VITE_API_BASE_URL}/leagues/${editingLeague._id}`
+        : `${import.meta.env.VITE_API_BASE_URL}/leagues`;
+      
+      const response = await fetch(url, {
+        method: editingLeague ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -290,10 +295,41 @@ const Tournaments = () => {
         fetchLeagues();
         setShowLeagueModal(false);
         setLeagueFormData({ name: '', description: '' });
+        setEditingLeague(null);
       }
     } catch (error) {
-      console.error("Error creating league:", error);
+      console.error("Error saving league:", error);
     }
+  };
+
+  const handleDeleteLeague = async (id) => {
+    setModalContent({
+      title: 'Confirm Delete',
+      message: 'Are you sure you want to delete this league? This will NOT delete tournaments but they will lose their league association.',
+      confirmText: 'Delete',
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('adminToken');
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/leagues/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (response.ok) {
+            fetchLeagues();
+            setModalOpen(false);
+          }
+        } catch (error) {
+          console.error("Error deleting league:", error);
+        }
+      }
+    });
+    setModalOpen(true);
+  };
+
+  const handleEditLeague = (league) => {
+    setEditingLeague(league);
+    setLeagueFormData({ name: league.name, description: league.description || '' });
+    setShowLeagueModal(true);
   };
 
   const fetchTournaments = async () => {
@@ -1075,6 +1111,75 @@ const Tournaments = () => {
       );
     }
   
+    if (view === 'manage-leagues') {
+      return (
+        <div className="tournaments-section">
+          <div className="section-header">
+            <button className="back-btn" onClick={() => setView('list')}>
+              <FaArrowLeft /> Back to Tournaments
+            </button>
+            <div className="header-text">
+              <h2>Manage Leagues</h2>
+              <p>Edit league names and see assigned tournaments</p>
+            </div>
+            <button className="add-btn league-btn" onClick={() => {
+              setEditingLeague(null);
+              setLeagueFormData({ name: '', description: '' });
+              setShowLeagueModal(true);
+            }}>
+              <FaPlus /> Add New League
+            </button>
+          </div>
+
+          <div className="leagues-management-list">
+            {leagues.length === 0 ? (
+              <p className="no-data">No leagues found.</p>
+            ) : (
+              <div className="manage-league-grid">
+                {leagues.map(league => {
+                  const leagueTournaments = tournaments.filter(t => t.leagueName === league.name);
+                  return (
+                    <div key={league._id} className="manage-league-card">
+                      <div className="manage-league-info">
+                        <h3>{league.name}</h3>
+                        <p>{league.description || "No description"}</p>
+                        <div className="league-stats-mini">
+                          <strong>{leagueTournaments.length}</strong> Tournaments
+                        </div>
+                      </div>
+                      
+                      <div className="league-tournaments-preview">
+                        <h4>Assigned Tournaments:</h4>
+                        {leagueTournaments.length > 0 ? (
+                          <ul>
+                            {leagueTournaments.slice(0, 5).map(t => (
+                              <li key={t._id}>{t.name}</li>
+                            ))}
+                            {leagueTournaments.length > 5 && <li>... and {leagueTournaments.length - 5} more</li>}
+                          </ul>
+                        ) : (
+                          <p className="no-tourneys">No tournaments assigned</p>
+                        )}
+                      </div>
+
+                      <div className="manage-league-actions">
+                        <button className="edit-btn" onClick={() => handleEditLeague(league)}>
+                          <FaEdit /> Edit Name
+                        </button>
+                        <button className="delete-btn-league" onClick={() => handleDeleteLeague(league._id)}>
+                          <FaTrash /> Delete
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="tournaments-section">
         <div className="section-header">
@@ -1084,7 +1189,14 @@ const Tournaments = () => {
           </div>
           {currentUser?.role === 'Super Admin' && (
             <div className="admin-actions">
-              <button className="add-btn league-btn" onClick={() => setShowLeagueModal(true)}>
+              <button className="add-btn league-btn" onClick={() => setView('manage-leagues')}>
+                <FaUsers /> Manage Leagues
+              </button>
+              <button className="add-btn league-btn" onClick={() => {
+                setEditingLeague(null);
+                setLeagueFormData({ name: '', description: '' });
+                setShowLeagueModal(true);
+              }}>
                 <FaPlus /> Create a League
               </button>
               <button className="add-btn" onClick={handleCreateNew}>
@@ -1188,8 +1300,12 @@ const Tournaments = () => {
         <div className="custom-modal-overlay">
           <div className="custom-modal-content league-modal">
             <div className="modal-header">
-              <h3>Create New League</h3>
-              <button className="close-btn" onClick={() => setShowLeagueModal(false)}>&times;</button>
+              <h3>{editingLeague ? 'Edit League' : 'Create New League'}</h3>
+              <button className="close-btn" onClick={() => {
+                setShowLeagueModal(false);
+                setEditingLeague(null);
+                setLeagueFormData({ name: '', description: '' });
+              }}>&times;</button>
             </div>
             <form onSubmit={handleCreateLeague}>
               <div className="form-group">

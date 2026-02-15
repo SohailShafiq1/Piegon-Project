@@ -56,13 +56,13 @@ const LeagueView = () => {
         </div>
         
         <div className="league-content">
+          <div className="league-section-banner">
+            {decodeURIComponent(leagueName) === 'Independent' ? "Other Independent Tournaments" : decodeURIComponent(leagueName)}
+          </div>
+
           {tournaments.length > 0 ? (
             tournaments.map((t) => (
               <div key={t._id} className="league-tournament-section">
-                <div className="league-section-banner">
-                  {decodeURIComponent(leagueName) === 'Independent' ? "Other Independent Tournaments" : decodeURIComponent(leagueName)}
-                </div>
-                
                 <div className="league-tournament-body">
                   <div className="league-tournament-right">
                     <div className="league-tournament-info">
@@ -121,7 +121,10 @@ const LeagueView = () => {
               </div>
             ))
           ) : (
-            <div className="no-tournaments">No active tournaments in this league.</div>
+            <div className="league-tournament-section" style={{ padding: '40px', textAlign: 'center' }}>
+              <h3 style={{ color: '#2d3748', marginBottom: '10px' }}>No Active Tournaments</h3>
+              <p style={{ color: '#718096' }}>There are currently no active tournaments listed under this league. Please check back later.</p>
+            </div>
           )}
         </div>
       </div>
