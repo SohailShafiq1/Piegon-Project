@@ -44,21 +44,39 @@ function Home() {
           const active = data.find(t => t.status === 'Active') || data[0];
           setActiveTournament(active);
 
-          // Default to the last date that has entered data
-          const pigeonsPerDay = active.numPigeons || 0;
-          const numDays = active.flyingDates?.length || 0;
-          let lastActiveIdx = 0;
-          for (let d = numDays - 1; d >= 0; d--) {
-            const hasData = (active.participants || []).some(p => {
-              const dayTimes = (p.pigeonTimes || []).slice(d * pigeonsPerDay, (d + 1) * pigeonsPerDay);
-              return dayTimes.some(t => t && t.trim() !== '');
-            });
-            if (hasData) {
-              lastActiveIdx = d;
-              break;
+          // Smart date selection based on current date
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          const flyingDatesArr = active.flyingDates || [];
+          let bestIdx = 0;
+
+          if (flyingDatesArr.length > 0) {
+            const firstDate = new Date(flyingDatesArr[0]);
+            firstDate.setHours(0, 0, 0, 0);
+            
+            const lastDate = new Date(flyingDatesArr[flyingDatesArr.length - 1]);
+            lastDate.setHours(0, 0, 0, 0);
+
+            if (today <= firstDate) {
+              bestIdx = 0;
+            } else if (today >= lastDate) {
+              bestIdx = flyingDatesArr.length - 1;
+            } else {
+              // We are between start and end. Find exact match or the latest one that has passed.
+              for (let i = 0; i < flyingDatesArr.length; i++) {
+                const d = new Date(flyingDatesArr[i]);
+                d.setHours(0, 0, 0, 0);
+                if (today.getTime() === d.getTime()) {
+                  bestIdx = i;
+                  break;
+                } else if (d < today) {
+                  bestIdx = i; // Keep tracking the latest date that is before or equal to today
+                }
+              }
             }
           }
-          setActiveDateIndex(lastActiveIdx);
+          setActiveDateIndex(bestIdx);
         }
         setLoading(false);
       } catch (error) {
@@ -136,21 +154,39 @@ function TournamentView() {
         const data = await response.json();
         setTournament(data);
 
-        // Default to the last date that has entered data
-        const pigeonsPerDay = data.numPigeons || 0;
-        const numDays = data.flyingDates?.length || 0;
-        let lastActiveIdx = 0;
-        for (let d = numDays - 1; d >= 0; d--) {
-          const hasData = (data.participants || []).some(p => {
-            const dayTimes = (p.pigeonTimes || []).slice(d * pigeonsPerDay, (d + 1) * pigeonsPerDay);
-            return dayTimes.some(t => t && t.trim() !== '');
-          });
-          if (hasData) {
-            lastActiveIdx = d;
-            break;
+        // Smart date selection based on current date
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const flyingDatesArr = data.flyingDates || [];
+        let bestIdx = 0;
+
+        if (flyingDatesArr.length > 0) {
+          const firstDate = new Date(flyingDatesArr[0]);
+          firstDate.setHours(0, 0, 0, 0);
+          
+          const lastDate = new Date(flyingDatesArr[flyingDatesArr.length - 1]);
+          lastDate.setHours(0, 0, 0, 0);
+
+          if (today <= firstDate) {
+            bestIdx = 0;
+          } else if (today >= lastDate) {
+            bestIdx = flyingDatesArr.length - 1;
+          } else {
+            // We are between start and end. Find exact match or the latest one that has passed.
+            for (let i = 0; i < flyingDatesArr.length; i++) {
+              const d = new Date(flyingDatesArr[i]);
+              d.setHours(0, 0, 0, 0);
+              if (today.getTime() === d.getTime()) {
+                bestIdx = i;
+                break;
+              } else if (d < today) {
+                bestIdx = i; // Keep tracking the latest date that is before or equal to today
+              }
+            }
           }
         }
-        setActiveDateIndex(lastActiveIdx);
+        setActiveDateIndex(bestIdx);
 
         setLoading(false);
       } catch (error) {
