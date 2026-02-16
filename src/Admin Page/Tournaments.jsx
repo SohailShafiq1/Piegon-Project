@@ -459,12 +459,33 @@ const Tournaments = () => {
       lastWinner: t.lastWinner || '',
       lastTime: t.lastTime || ''
     });
+
+    // Auto-select date index if today matches a tournament date
+    let bestIdx = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const flyingDatesArr = t.flyingDates || [];
+    if (flyingDatesArr.length > 0) {
+      for (let i = 0; i < flyingDatesArr.length; i++) {
+        const d = new Date(flyingDatesArr[i]);
+        d.setHours(0, 0, 0, 0);
+        if (today.getTime() === d.getTime()) {
+          bestIdx = i;
+          break;
+        } else if (d < today) {
+          bestIdx = i;
+        }
+      }
+    }
+    setActiveDateIndex(bestIdx);
     setView('edit');
   };
 
   const handleCreateNew = () => {
     setSelectedTournament(null);
     setFormData(initialFormState);
+    setActiveDateIndex(0);
     setView('edit');
   };
 
