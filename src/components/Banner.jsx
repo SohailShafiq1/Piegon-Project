@@ -8,10 +8,12 @@ const Banner = ({ posters }) => {
   const images = (posters && posters.length > 0) ? posters : defaultImages;
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    // Reset index when images change (e.g. switching tournaments)
+  // Reset index when images change (e.g. switching tournaments)
+  const [prevLength, setPrevLength] = useState(images.length);
+  if (images.length !== prevLength) {
+    setPrevLength(images.length);
     setCurrentIndex(0);
-  }, [images.length]);
+  }
 
   useEffect(() => {
     const timer = setInterval(() => {

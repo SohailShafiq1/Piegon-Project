@@ -8,10 +8,6 @@ const News = () => {
     const [editingNews, setEditingNews] = useState(null);
     const [formData, setFormData] = useState({ title: '', content: '', status: 'Published' });
 
-    useEffect(() => {
-        fetchNews();
-    }, []);
-
     const fetchNews = async () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/news`);
@@ -21,6 +17,13 @@ const News = () => {
             console.error('Error fetching news:', error);
         }
     };
+
+    useEffect(() => {
+        const init = async () => {
+            await fetchNews();
+        };
+        init();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

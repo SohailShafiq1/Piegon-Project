@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaPlus, FaTrophy, FaUserShield, FaArrowLeft, FaSave, FaTrash, FaImage, FaCalendarAlt, FaClock, FaDove, FaUserPlus, FaUserFriends, FaEdit, FaUsers, FaMapMarkerAlt, FaPhone, FaLink } from 'react-icons/fa';
 import Modal from '../components/Modal';
 import '../styles/Modal.css';
@@ -45,25 +45,85 @@ const Tournaments = () => {
 
   const [formData, setFormData] = useState(initialFormState);
   const [newParticipant, setNewParticipant] = useState({ name: '', image: '', address: '', phone: '' });
-  const [showParticipantForm, setShowParticipantForm] = useState(false);
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [activeDateIndex, setActiveDateIndex] = useState(null); // Changed to null: Force date selection
+
+  const fetchLeagues = useCallback(async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/leagues`);
+      const data = await response.json();
+      setLeagues(data);
+    } catch (error) {
+      console.error("Error fetching leagues:", error);
+    }
+  }, []);
+
+  const fetchTournaments = useCallback(async () => {
+    const token = localStorage.getItem('adminToken');
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      
+      // Sort tournaments: User's assigned tournaments first (or their league's tournaments)
+      const sortedTournaments = [...data].sort((a, b) => {
+        const isAAdmin = (a.admin?._id || a.admin) === currentUser?.id;
+        const isBAdmin = (b.admin?._id || b.admin) === currentUser?.id;
+        
+        const leagueA = leagues.find(l => l.name === a.leagueName);
+        const leagueB = leagues.find(l => l.name === b.leagueName);
+        
+        const isALeagueAdmin = (leagueA?.admin?._id || leagueA?.admin) === currentUser?.id;
+        const isBLeagueAdmin = (leagueB?.admin?._id || leagueB?.admin) === currentUser?.id;
+
+        const isAOwner = isAAdmin || isALeagueAdmin;
+        const isBOwner = isBAdmin || isBLeagueAdmin;
+
+        if (isAOwner && !isBOwner) return -1;
+        if (!isAOwner && isBOwner) return 1;
+        return 0;
+      });
+
+      setTournaments(sortedTournaments);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching tournaments:", error);
+      setLoading(false);
+    }
+  }, [currentUser?.id, leagues]);
+
+  const fetchAdmins = useCallback(async () => {
+    const token = localStorage.getItem('adminToken');
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admins`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.status === 401 || response.status === 403) {
+        // Handle unauthorized
+        return;
+      }
+      if (response.status === 404) {
+        setAdmins([{ id: 1, name: "Super Admin" }, { id: 2, name: "Admin 1" }]);
+        return;
+      }
+      const data = await response.json();
+      setAdmins(data);
+    } catch (error) {
+      console.error("Error fetching admins:", error);
+    }
+  }, []);
 
   // Global Owners Search State
   const [ownerSearch, setOwnerSearch] = useState('');
   const [showOwnerSuggestions, setShowOwnerSuggestions] = useState(false);
   const [globalOwnersList, setGlobalOwnersList] = useState([]);
 
-  useEffect(() => {
-    if (ownerSearch.length > 1) {
-      searchGlobalOwners();
-    } else {
-      setGlobalOwnersList([]);
-      setShowOwnerSuggestions(false);
-    }
-  }, [ownerSearch]);
-
-  const searchGlobalOwners = async () => {
+  const searchGlobalOwners = useCallback(async () => {
     try {
       const token = localStorage.getItem('adminToken');
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/owners/search?q=${ownerSearch}`, {
@@ -75,7 +135,19 @@ const Tournaments = () => {
     } catch (error) {
       console.error("Error searching owners:", error);
     }
-  };
+  }, [ownerSearch]);
+
+  useEffect(() => {
+    const runSearch = async () => {
+      if (ownerSearch.length > 1) {
+        await searchGlobalOwners();
+      } else {
+        setGlobalOwnersList([]);
+        setShowOwnerSuggestions(false);
+      }
+    };
+    runSearch();
+  }, [ownerSearch, searchGlobalOwners]);
 
   const handleSelectOwner = (owner) => {
     setNewParticipant({
@@ -282,22 +354,15 @@ const Tournaments = () => {
   };
 
   useEffect(() => {
-    fetchTournaments();
-    fetchLeagues();
-    if (currentUser?.role === 'Super Admin') {
-      fetchAdmins();
-    }
-  }, []);
-
-  const fetchLeagues = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/leagues`);
-      const data = await response.json();
-      setLeagues(data);
-    } catch (error) {
-      console.error("Error fetching leagues:", error);
-    }
-  };
+    const init = async () => {
+      await fetchTournaments();
+      await fetchLeagues();
+      if (currentUser?.role === 'Super Admin') {
+        await fetchAdmins();
+      }
+    };
+    init();
+  }, [currentUser?.role, fetchTournaments, fetchLeagues, fetchAdmins]);
 
   const handleCreateLeague = async (e) => {
     if (e) e.preventDefault();
@@ -360,66 +425,6 @@ const Tournaments = () => {
       admin: league.admin?._id || league.admin || ''
     });
     setShowLeagueModal(true);
-  };
-
-  const fetchTournaments = async () => {
-    const token = localStorage.getItem('adminToken');
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      
-      // Sort tournaments: User's assigned tournaments first (or their league's tournaments)
-      const sortedTournaments = [...data].sort((a, b) => {
-        const isAAdmin = (a.admin?._id || a.admin) === currentUser?.id;
-        const isBAdmin = (b.admin?._id || b.admin) === currentUser?.id;
-        
-        const leagueA = leagues.find(l => l.name === a.leagueName);
-        const leagueB = leagues.find(l => l.name === b.leagueName);
-        
-        const isALeagueAdmin = (leagueA?.admin?._id || leagueA?.admin) === currentUser?.id;
-        const isBLeagueAdmin = (leagueB?.admin?._id || leagueB?.admin) === currentUser?.id;
-
-        const isAOwner = isAAdmin || isALeagueAdmin;
-        const isBOwner = isBAdmin || isBLeagueAdmin;
-
-        if (isAOwner && !isBOwner) return -1;
-        if (!isAOwner && isBOwner) return 1;
-        return 0;
-      });
-
-      setTournaments(sortedTournaments);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching tournaments:", error);
-      setLoading(false);
-    }
-  };
-
-  const fetchAdmins = async () => {
-    const token = localStorage.getItem('adminToken');
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admins`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.status === 401 || response.status === 403) {
-        // Handle unauthorized
-        return;
-      }
-      if (response.status === 404) {
-        setAdmins([{ id: 1, name: "Super Admin" }, { id: 2, name: "Admin 1" }]);
-        return;
-      }
-      const data = await response.json();
-      setAdmins(data);
-    } catch (error) {
-      console.error("Error fetching admins:", error);
-    }
   };
 
   const handleEdit = (t) => {

@@ -8,10 +8,6 @@ const Categories = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchTournaments();
-  }, []);
-
   const fetchTournaments = async () => {
     try {
       const token = localStorage.getItem('adminToken');
@@ -28,6 +24,13 @@ const Categories = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const init = async () => {
+      await fetchTournaments();
+    };
+    init();
+  }, []);
 
   if (loading) return <div className="loading-screen">Loading Tournament Analysis...</div>;
 

@@ -17,10 +17,6 @@ const ManageOwners = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', message: '', onConfirm: null, confirmText: 'OK' });
 
-  useEffect(() => {
-    fetchOwners();
-  }, []);
-
   const fetchOwners = async () => {
     try {
       const token = localStorage.getItem('adminToken');
@@ -35,6 +31,13 @@ const ManageOwners = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const init = async () => {
+      await fetchOwners();
+    };
+    init();
+  }, []);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];

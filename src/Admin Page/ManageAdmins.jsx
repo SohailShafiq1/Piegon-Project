@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './ManageAdmins.css';
 
 const ManageAdmins = () => {
@@ -14,11 +14,7 @@ const ManageAdmins = () => {
   const currentUser = JSON.parse(localStorage.getItem('adminUser'));
   const token = localStorage.getItem('adminToken');
 
-  useEffect(() => {
-    fetchAdmins();
-  }, []);
-
-  const fetchAdmins = async () => {
+  const fetchAdmins = useCallback(async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admins`, {
         headers: {
@@ -32,7 +28,14 @@ const ManageAdmins = () => {
     } catch (err) {
       console.error('Error fetching admins:', err);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    const init = async () => {
+      await fetchAdmins();
+    };
+    init();
+  }, [fetchAdmins]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,7 +71,7 @@ const ManageAdmins = () => {
       } else {
         setError(data.message || 'Failed to process request');
       }
-    } catch (err) {
+    } catch {
       setError('Server error');
     }
   };
@@ -110,7 +113,7 @@ const ManageAdmins = () => {
         const data = await response.json();
         setError(data.message || 'Failed to delete admin');
       }
-    } catch (err) {
+    } catch {
       setError('Server error');
     }
   };

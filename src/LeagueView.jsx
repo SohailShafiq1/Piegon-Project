@@ -36,28 +36,6 @@ const LeagueView = () => {
     fetchLeagueTournaments();
   }, [leagueName]);
 
-  const handleCopyLink = (tournamentId, e) => {
-    e.stopPropagation();
-    const url = `${window.location.origin}/tournament/${tournamentId}`;
-    navigator.clipboard.writeText(url).then(() => {
-      const target = e.currentTarget;
-      const originalContent = target.innerHTML;
-      target.innerHTML = 'Copied!';
-      target.classList.add('copied');
-      setTimeout(() => {
-        target.innerHTML = originalContent;
-        target.classList.remove('copied');
-      }, 2000);
-    });
-  };
-
-  const formatPlayerName = (name) => {
-    if (!name) return "";
-    const words = name.split(/\s+/);
-    if (words.length <= 3) return name;
-    return words.slice(0, 3).join(' ') + '...';
-  };
-
   if (loading) return <div className="loading-screen">Loading League Data...</div>;
 
   return (

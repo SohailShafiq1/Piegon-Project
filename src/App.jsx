@@ -23,19 +23,6 @@ function Home() {
   const [activeDateIndex, setActiveDateIndex] = useState(0);
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
-
-  const copyUrl = async () => {
-    if (!activeTournament) return;
-    try {
-      const url = `${window.location.origin}/tournament/${activeTournament._id}`;
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Copy failed', err);
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -131,17 +118,6 @@ function TournamentView() {
   const [activeDateIndex, setActiveDateIndex] = useState(0);
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
-
-  const copyUrl = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Copy failed', err);
-    }
-  }; 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -196,7 +172,7 @@ function TournamentView() {
       <div className="main-content">
         <div className="announcement">
           <marquee behavior="scroll" direction="right">
-              {activeTournament.headline || ` - کوٹلہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
+              {tournament.headline || ` - کوٹلہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
            
             {newsList.map(news => (
                <span key={news._id} style={{ marginLeft: '100px' }}>

@@ -32,7 +32,7 @@ const AdminLogin = () => {
       } else {
         setError(data.message || 'Login failed');
       }
-    } catch (err) {
+    } catch {
       setError('Server error. Please try again later.');
     } finally {
       setLoading(false);

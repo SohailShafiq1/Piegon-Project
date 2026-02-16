@@ -11,7 +11,7 @@ import {
 const Leaderboard = ({ tournament, dateIndex }) => {
   if (!tournament) return null;
 
-  const { participants = [], startTime, numPigeons, helperPigeons, numDays } = tournament;
+  const { participants = [], startTime, numPigeons, numDays } = tournament;
   const pigeonsPerDay = numPigeons || 0;
 
   // Helper to show HH:MM:SS strings

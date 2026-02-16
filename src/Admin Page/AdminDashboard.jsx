@@ -6,19 +6,19 @@ import { FaTachometerAlt, FaList, FaTrophy, FaUserFriends, FaNewspaper, FaUserSh
 
 const AdminDashboard = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user] = useState(() => {
+    const adminUser = localStorage.getItem('adminUser');
+    return adminUser ? JSON.parse(adminUser) : null;
+  });
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const adminUser = localStorage.getItem('adminUser');
     const token = localStorage.getItem('adminToken');
-    if (!adminUser || !token) {
+    if (!user || !token) {
       navigate('/admin/login');
-    } else {
-      setUser(JSON.parse(adminUser));
     }
-  }, [navigate]);
+  }, [user, navigate]);
 
   const allMenuItems = [
     { title: 'Dashboard', icon: <FaTachometerAlt />, path: '/admin' },
