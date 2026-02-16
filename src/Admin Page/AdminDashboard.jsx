@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Footer from '../components/Footer';
 import './AdminDashboard.css';
-import { FaTachometerAlt, FaList, FaTrophy, FaUserFriends, FaNewspaper, FaUserShield, FaEllipsisV, FaSignOutAlt } from 'react-icons/fa';
+import { FaTachometerAlt, FaList, FaTrophy, FaUserFriends, FaNewspaper, FaUserShield, FaEllipsisV, FaSignOutAlt, FaImage } from 'react-icons/fa';
 
 const AdminDashboard = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -27,6 +27,7 @@ const AdminDashboard = () => {
     { title: 'Piegon Owners', icon: <FaUserFriends />, path: '/admin/owners' },
     { title: 'News', icon: <FaNewspaper />, path: '/admin/news' },
     { title: 'Admin Users', icon: <FaUserShield />, path: '/admin/users' },
+    { title: 'Default Banner', icon: <FaImage />, path: '/admin/settings' },
   ];
 
   // Filter menu items based on user role

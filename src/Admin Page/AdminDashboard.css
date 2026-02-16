@@ -25,6 +25,17 @@
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+@media (min-width: 480px) {
+  .header-left h2 {
+    max-width: none;
+    font-size: 1.25rem;
+  }
 }
 
 .header-right {
@@ -157,6 +168,20 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
+}
+
+@media (min-width: 600px) {
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .stat-card {

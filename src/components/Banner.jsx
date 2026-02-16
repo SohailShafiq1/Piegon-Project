@@ -1,12 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import '../styles/Banner.css';
 import img1 from '../assets/img1.jpg';
 import img2 from '../assets/img2.jpg';
 
 const Banner = ({ posters }) => {
-  const defaultImages = [img1, img2];
-  const images = (posters && posters.length > 0) ? posters : defaultImages;
+  const hardcodedDefaults = useMemo(() => [img1, img2], []);
+  const [images, setImages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const fetchDefaultPosters = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/settings/defaultPosters`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.value && data.value.length > 0) {
+            setImages(data.value);
+            return;
+          }
+        }
+        setImages(hardcodedDefaults);
+      } catch (error) {
+        console.error('Error fetching default posters:', error);
+        setImages(hardcodedDefaults);
+      }
+    };
+
+    if (posters && posters.length > 0) {
+      setImages(posters);
+    } else {
+      fetchDefaultPosters();
+    }
+  }, [posters, hardcodedDefaults]);
 
   // Reset index when images change (e.g. switching tournaments)
   const [prevLength, setPrevLength] = useState(images.length);

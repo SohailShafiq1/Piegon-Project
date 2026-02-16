@@ -15,6 +15,7 @@ import News from './Admin Page/News';
 import AdminLogin from './Admin Page/AdminLogin';
 import ManageAdmins from './Admin Page/ManageAdmins';
 import ManageOwners from './Admin Page/ManageOwners';
+import GeneralSettings from './Admin Page/GeneralSettings';
 import LeagueView from './LeagueView';
 import './App.css';
 
@@ -271,6 +272,7 @@ function App() {
             <Route path="owners" element={<ManageOwners />} />
             <Route path="news" element={<News />} />
             <Route path="users" element={<ManageAdmins />} />
+            <Route path="settings" element={<GeneralSettings />} />
           </Route>
         </Routes>
       </div>
