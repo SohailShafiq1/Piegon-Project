@@ -18,15 +18,19 @@ export const formatTime = (totalSeconds, showSeconds = false) => {
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 };
 
-export const calculateTotalSeconds = (startTime, pigeonTimes, scoringCount = 0) => {
-    const effectiveStartTime = startTime || '06:00';
-    const startSeconds = getSeconds(effectiveStartTime);
-    let totalSeconds = 0;
+export const calculateTotalSeconds = (startTime, pigeonTimes, scoringCount = 0, helperCount = 0) => {
+  const effectiveStartTime = startTime || '06:00';
+  const startSeconds = getSeconds(effectiveStartTime);
+  let totalSeconds = 0;
 
-    const enteredTimes = (pigeonTimes || []).filter(t => t && t !== '');
-    const k = enteredTimes.length;
-    const skip = Math.max(0, k - scoringCount);
-    const scoringEntries = enteredTimes.slice(skip);
+  const enteredTimes = (pigeonTimes || []).filter(t => t && t !== '');
+  const shouldSkipHelpers = helperCount > 0 && scoringCount > 0 && enteredTimes.length >= scoringCount + helperCount;
+  const helperSkips = shouldSkipHelpers ? helperCount : 0;
+  const candidateTimes = enteredTimes.slice(helperSkips);
+  const k = candidateTimes.length;
+  const effectiveScoringCount = scoringCount > 0 ? scoringCount : k;
+  const skip = Math.max(0, k - effectiveScoringCount);
+  const scoringEntries = candidateTimes.slice(skip);
 
     scoringEntries.forEach((time) => {
       let landSeconds = getSeconds(time);
@@ -40,24 +44,24 @@ export const calculateTotalSeconds = (startTime, pigeonTimes, scoringCount = 0) 
     return totalSeconds;
 };
 
-export const calculateTotalTime = (startTime, pigeonTimes, scoringCount = 0) => {
-    const totalSeconds = calculateTotalSeconds(startTime, pigeonTimes, scoringCount);
+export const calculateTotalTime = (startTime, pigeonTimes, scoringCount = 0, helperCount = 0) => {
+  const totalSeconds = calculateTotalSeconds(startTime, pigeonTimes, scoringCount, helperCount);
     return formatTime(totalSeconds, true);
 };
 
-export const calculateGrandTotalSeconds = (pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, participant = null) => {
+export const calculateGrandTotalSeconds = (pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, helperPigeons = 0, participant = null) => {
     let totalSeconds = 0;
     for (let d = 0; d < numDays; d++) {
       const dayTimes = (pigeonTimes || []).slice(d * pigeonsPerDay, (d + 1) * pigeonsPerDay);
       // Use individual daily start time if available, otherwise participant overall start time, otherwise tournament start time
       const dayStartTime = (participant?.dailyStartTimes && participant.dailyStartTimes[d]) || participant?.startTime || startTime;
-      totalSeconds += calculateTotalSeconds(dayStartTime, dayTimes, scoringPigeons);
+      totalSeconds += calculateTotalSeconds(dayStartTime, dayTimes, scoringPigeons, helperPigeons);
     }
     return totalSeconds;
 };
 
-export const calculateGrandTotal = (pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, participant = null) => {
-    const totalSeconds = calculateGrandTotalSeconds(pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, participant);
+export const calculateGrandTotal = (pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, helperPigeons = 0, participant = null) => {
+    const totalSeconds = calculateGrandTotalSeconds(pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, helperPigeons, participant);
     return formatTime(totalSeconds, true);
 };
 

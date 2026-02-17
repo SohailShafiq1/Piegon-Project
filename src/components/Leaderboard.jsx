@@ -13,6 +13,8 @@ const Leaderboard = ({ tournament, dateIndex }) => {
 
   const { participants = [], startTime, numPigeons, numDays } = tournament;
   const pigeonsPerDay = numPigeons || 0;
+  const scoringPigeons = tournament.noteTimePigeons || numPigeons || 0;
+  const helperPigeons = tournament.helperPigeons || 0;
 
   // Helper to show HH:MM:SS strings
   const formatDisplayTime = (timeStr) => {
@@ -41,15 +43,15 @@ const Leaderboard = ({ tournament, dateIndex }) => {
   const sortedParticipants = [...participants].sort((a, b) => {
     let aSecs, bSecs;
     if (dateIndex === 'total') {
-      aSecs = calculateGrandTotalSeconds(a.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons, a);
-      bSecs = calculateGrandTotalSeconds(b.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons, b);
+      aSecs = calculateGrandTotalSeconds(a.pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, helperPigeons, a);
+      bSecs = calculateGrandTotalSeconds(b.pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, helperPigeons, b);
     } else {
       const aDayTimes = (a.pigeonTimes || []).slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay);
       const bDayTimes = (b.pigeonTimes || []).slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay);
       const aDayStartTime = (a.dailyStartTimes && a.dailyStartTimes[dateIndex]) || a.startTime || startTime;
       const bDayStartTime = (b.dailyStartTimes && b.dailyStartTimes[dateIndex]) || b.startTime || startTime;
-      aSecs = calculateTotalSeconds(aDayStartTime, aDayTimes, numPigeons);
-      bSecs = calculateTotalSeconds(bDayStartTime, bDayTimes, numPigeons);
+      aSecs = calculateTotalSeconds(aDayStartTime, aDayTimes, scoringPigeons, helperPigeons);
+      bSecs = calculateTotalSeconds(bDayStartTime, bDayTimes, scoringPigeons, helperPigeons);
     }
     // Sort descending (longer time is better)
     return bSecs - aSecs;
@@ -132,18 +134,19 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                     const dayStartTime = (p.dailyStartTimes && p.dailyStartTimes[dIdx]) || p.startTime || startTime;
                     return (
                       <td key={dIdx}>
-                        {calculateTotalTime(dayStartTime, p.pigeonTimes.slice(dIdx * pigeonsPerDay, (dIdx + 1) * pigeonsPerDay), numPigeons)}
+                        {calculateTotalTime(dayStartTime, p.pigeonTimes.slice(dIdx * pigeonsPerDay, (dIdx + 1) * pigeonsPerDay), scoringPigeons, helperPigeons)}
                       </td>
                     );
                   })
                 )}
                 <td className="total-cell">
                   {dateIndex === 'total' 
-                    ? calculateGrandTotal(p.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons, p)
+                      ? calculateGrandTotal(p.pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, helperPigeons, p)
                     : calculateTotalTime(
                         (p.dailyStartTimes && p.dailyStartTimes[dateIndex]) || p.startTime || startTime,
                         p.pigeonTimes.slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay),
-                        numPigeons
+                          scoringPigeons,
+                          helperPigeons
                       )
                   }
                 </td>

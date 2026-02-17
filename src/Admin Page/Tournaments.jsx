@@ -284,13 +284,17 @@ const Tournaments = () => {
     }
     updatedParticipant.pigeonTimes[pigeonIndex] = value;
     
+    const scoringPigeons = formData.noteTimePigeons || formData.numPigeons || 0;
+    const helperPigeons = formData.helperPigeons || 0;
+
     // Recalculate grand total time
     updatedParticipant.totalTime = calculateGrandTotal(
       updatedParticipant.pigeonTimes,
       formData.numPigeons || 0,
       formData.startTime,
       formData.numDays || 1,
-      formData.numPigeons || 0,
+      scoringPigeons,
+      helperPigeons,
       updatedParticipant
     );
 
@@ -349,13 +353,17 @@ const Tournaments = () => {
     // Update the participant with the new clean array
     currentParticipant.dailyStartTimes = newDailyStartTimes;
     
+    const scoringPigeons = formData.noteTimePigeons || formData.numPigeons || 0;
+    const helperPigeons = formData.helperPigeons || 0;
+
     // Recalculate total time
     currentParticipant.totalTime = calculateGrandTotal(
       currentParticipant.pigeonTimes,
       formData.numPigeons || 0,
       formData.startTime,
       formData.numDays || 1,
-      formData.numPigeons || 0,
+      scoringPigeons,
+      helperPigeons,
       currentParticipant
     );
 
@@ -683,6 +691,8 @@ const Tournaments = () => {
     }
 
     const totalPigeonsPerDay = formData.numPigeons || 0;
+    const scoringPigeons = formData.noteTimePigeons || totalPigeonsPerDay;
+    const helperPigeons = formData.helperPigeons || 0;
     const updatedParticipants = (formData.participants || []).map(p => {
       // Use the cleaning helper to ensure proper arrays
       const cleaned = cleanParticipantForSave(p, formData.numDays || 1, formData.startTime || '06:00');
@@ -693,7 +703,8 @@ const Tournaments = () => {
         totalPigeonsPerDay, 
         formData.startTime, 
         formData.numDays || 1, 
-        formData.numPigeons || 0, 
+        scoringPigeons, 
+        helperPigeons,
         cleaned
       );
       
@@ -832,8 +843,11 @@ const Tournaments = () => {
   if (loading) return <div>Loading Tournaments...</div>;
 
   const renderView = () => {
+    const totalPigeonsPerDay = formData.numPigeons || 0;
+    const scoringPigeons = formData.noteTimePigeons || totalPigeonsPerDay;
+    const helperPigeons = formData.helperPigeons || 0;
+
     if (view === 'time-entry') {
-      const totalPigeonsPerDay = formData.numPigeons || 0;
       const flyingDates = formData.flyingDates || [];
   
       return (
@@ -984,7 +998,8 @@ const Tournaments = () => {
                                     {calculateTotalTime(
                                       (p.dailyStartTimes && p.dailyStartTimes[activeDateIndex]) || p.startTime || formData.startTime, 
                                       (p.pigeonTimes || []).slice(activeDateIndex * totalPigeonsPerDay, (activeDateIndex + 1) * totalPigeonsPerDay), 
-                                      formData.numPigeons || 0
+                                      scoringPigeons,
+                                      helperPigeons
                                     )}
                                   </td>
                                 </>
@@ -999,13 +1014,14 @@ const Tournaments = () => {
                                         {calculateTotalTime(
                                           dayStartTime, 
                                           (p.pigeonTimes || []).slice(idx * totalPigeonsPerDay, (idx + 1) * totalPigeonsPerDay), 
-                                          formData.numPigeons || 0
+                                          scoringPigeons,
+                                          helperPigeons
                                           )}
                                       </td>
                                      )
                                   })}
                                   <td className="grand-total-cell">
-                                    {calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, formData.numPigeons || 0, p)}
+                                    {calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, scoringPigeons, helperPigeons, p)}
                                   </td>
                                 </>
                               )}
