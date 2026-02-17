@@ -32,6 +32,51 @@ const ManageOwners = () => {
     }
   };
 
+  const updateTournamentParticipants = async (ownerId, newName, newImage, newPhone, newAddress) => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      // Fetch all tournaments
+      const tournamentsRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const tournaments = await tournamentsRes.json();
+
+      // Find and update tournaments that have this owner as a participant
+      for (const tournament of tournaments) {
+        if (!tournament.participants) continue;
+        
+        let updated = false;
+        const updatedParticipants = tournament.participants.map(p => {
+          if (p.ownerId === ownerId || p.ownerId?._id === ownerId) {
+            updated = true;
+            return {
+              ...p,
+              name: newName,
+              image: newImage || p.image || '',
+              phone: newPhone || p.phone || '',
+              address: newAddress || p.address || ''
+            };
+          }
+          return p;
+        });
+
+        // Update tournament if any participants were changed
+        if (updated) {
+          await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${tournament._id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ ...tournament, participants: updatedParticipants })
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error updating tournament participants:", error);
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       await fetchOwners();
@@ -87,6 +132,10 @@ const ManageOwners = () => {
       });
 
       if (response.ok) {
+        // If editing, update participant names in all tournaments
+        if (selectedOwner) {
+          await updateTournamentParticipants(selectedOwner._id, formData.name, formData.image, formData.phone, formData.address);
+        }
         fetchOwners();
         setView('list');
         setFormData(initialFormState);
