@@ -728,31 +728,6 @@ const Tournaments = () => {
         flyingDates
     };
 
-    // VALIDATION: Check for any corrupted arrays before sending
-    console.log('=== VALIDATION CHECK ===');
-    tournamentToSave.participants.forEach((p, idx) => {
-      if (p.dailyStartTimes) {
-        console.log(`Participant ${idx} (${p.name}) dailyStartTimes:`, p.dailyStartTimes);
-        
-        // Check if any element is not a string - if so, fix it
-        p.dailyStartTimes = p.dailyStartTimes.map((time, timeIdx) => {
-          if (typeof time === 'string') {
-            return time;
-          } else if (typeof time === 'object' && time !== null) {
-            console.warn(`FIXING: Found object in dailyStartTimes[${timeIdx}], extracting value:`, time);
-            const values = Object.values(time).filter(v => typeof v === 'string');
-            return values.length > 0 ? values[0] : (formData.startTime || '06:00');
-          } else {
-            console.warn(`FIXING: Found non-string in dailyStartTimes[${timeIdx}]:`, time);
-            return String(time || formData.startTime || '06:00');
-          }
-        });
-        
-        console.log(`Participant ${idx} CLEANED dailyStartTimes:`, p.dailyStartTimes);
-      }
-    });
-    console.log('=== END VALIDATION ===');
-
     const method = selectedTournament ? 'PUT' : 'POST';
     const url = selectedTournament 
       ? `${import.meta.env.VITE_API_BASE_URL}/tournaments/${selectedTournament._id}`
