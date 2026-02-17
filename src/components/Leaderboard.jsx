@@ -41,13 +41,15 @@ const Leaderboard = ({ tournament, dateIndex }) => {
   const sortedParticipants = [...participants].sort((a, b) => {
     let aSecs, bSecs;
     if (dateIndex === 'total') {
-      aSecs = calculateGrandTotalSeconds(a.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons);
-      bSecs = calculateGrandTotalSeconds(b.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons);
+      aSecs = calculateGrandTotalSeconds(a.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons, a);
+      bSecs = calculateGrandTotalSeconds(b.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons, b);
     } else {
       const aDayTimes = (a.pigeonTimes || []).slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay);
       const bDayTimes = (b.pigeonTimes || []).slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay);
-      aSecs = calculateTotalSeconds(startTime, aDayTimes, numPigeons);
-      bSecs = calculateTotalSeconds(startTime, bDayTimes, numPigeons);
+      const aDayStartTime = (a.dailyStartTimes && a.dailyStartTimes[dateIndex]) || a.startTime || startTime;
+      const bDayStartTime = (b.dailyStartTimes && b.dailyStartTimes[dateIndex]) || b.startTime || startTime;
+      aSecs = calculateTotalSeconds(aDayStartTime, aDayTimes, numPigeons);
+      bSecs = calculateTotalSeconds(bDayStartTime, bDayTimes, numPigeons);
     }
     // Sort descending (longer time is better)
     return bSecs - aSecs;
@@ -107,7 +109,7 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                      <span>{formatPlayerName(p.name)}</span>
                    </div>
                 </td>
-                {dateIndex !== 'total' && <td>{formatDisplayTime(startTime)}</td>}
+                {dateIndex !== 'total' && <td>{formatDisplayTime((p.dailyStartTimes && p.dailyStartTimes[dateIndex]) || p.startTime || startTime)}</td>}
                 {dateIndex !== 'total' ? (
                   [...Array(pigeonsPerDay)].map((_, pIdx) => {
                     const time = p.pigeonTimes[dateIndex * pigeonsPerDay + pIdx];
@@ -129,16 +131,23 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                     return <td key={pIdx} className={cellClass}>{formatDisplayTime(time)}</td>;
                   })
                 ) : (
-                  tournament.flyingDates.map((_, dIdx) => (
-                    <td key={dIdx}>
-                      {calculateTotalTime(startTime, p.pigeonTimes.slice(dIdx * pigeonsPerDay, (dIdx + 1) * pigeonsPerDay), numPigeons)}
-                    </td>
-                  ))
+                  tournament.flyingDates.map((_, dIdx) => {
+                    const dayStartTime = (p.dailyStartTimes && p.dailyStartTimes[dIdx]) || p.startTime || startTime;
+                    return (
+                      <td key={dIdx}>
+                        {calculateTotalTime(dayStartTime, p.pigeonTimes.slice(dIdx * pigeonsPerDay, (dIdx + 1) * pigeonsPerDay), numPigeons)}
+                      </td>
+                    );
+                  })
                 )}
                 <td className="total-cell">
                   {dateIndex === 'total' 
-                    ? calculateGrandTotal(p.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons)
-                    : calculateTotalTime(startTime, p.pigeonTimes.slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay), numPigeons)
+                    ? calculateGrandTotal(p.pigeonTimes, pigeonsPerDay, startTime, numDays, numPigeons, p)
+                    : calculateTotalTime(
+                        (p.dailyStartTimes && p.dailyStartTimes[dateIndex]) || p.startTime || startTime,
+                        p.pigeonTimes.slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay),
+                        numPigeons
+                      )
                   }
                 </td>
               </tr>

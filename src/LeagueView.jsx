@@ -85,8 +85,8 @@ const LeagueView = () => {
                           {t.participants && t.participants.length > 0 ? (
                             [...t.participants]
                               .sort((a, b) => {
-                                const aSecs = calculateGrandTotalSeconds(a.pigeonTimes, t.numPigeons, t.startTime, t.numDays, t.numPigeons);
-                                const bSecs = calculateGrandTotalSeconds(b.pigeonTimes, t.numPigeons, t.startTime, t.numDays, t.numPigeons);
+                                const aSecs = calculateGrandTotalSeconds(a.pigeonTimes, t.numPigeons, t.startTime, t.numDays, t.numPigeons, a);
+                                const bSecs = calculateGrandTotalSeconds(b.pigeonTimes, t.numPigeons, t.startTime, t.numDays, t.numPigeons, b);
                                 return bSecs - aSecs;
                               })
                               .slice(0, 7)
@@ -99,7 +99,7 @@ const LeagueView = () => {
                                   <td className="name-cell-urdu">{p.name}</td>
                                   <td className="city-cell">{p.address || '-'}</td>
                                   <td className="total-cell-bold">
-                                    {calculateGrandTotal(p.pigeonTimes, t.numPigeons, t.startTime, t.numDays, t.numPigeons)}
+                                    {calculateGrandTotal(p.pigeonTimes, t.numPigeons, t.startTime, t.numDays, t.numPigeons, p)}
                                   </td>
                                   <td className="prize-cell"></td>
                                 </tr>

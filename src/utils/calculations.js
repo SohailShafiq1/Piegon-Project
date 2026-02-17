@@ -45,17 +45,19 @@ export const calculateTotalTime = (startTime, pigeonTimes, scoringCount = 0) => 
     return formatTime(totalSeconds, true);
 };
 
-export const calculateGrandTotalSeconds = (pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons) => {
+export const calculateGrandTotalSeconds = (pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, participant = null) => {
     let totalSeconds = 0;
     for (let d = 0; d < numDays; d++) {
       const dayTimes = (pigeonTimes || []).slice(d * pigeonsPerDay, (d + 1) * pigeonsPerDay);
-      totalSeconds += calculateTotalSeconds(startTime, dayTimes, scoringPigeons);
+      // Use individual daily start time if available, otherwise participant overall start time, otherwise tournament start time
+      const dayStartTime = (participant?.dailyStartTimes && participant.dailyStartTimes[d]) || participant?.startTime || startTime;
+      totalSeconds += calculateTotalSeconds(dayStartTime, dayTimes, scoringPigeons);
     }
     return totalSeconds;
 };
 
-export const calculateGrandTotal = (pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons) => {
-    const totalSeconds = calculateGrandTotalSeconds(pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons);
+export const calculateGrandTotal = (pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, participant = null) => {
+    const totalSeconds = calculateGrandTotalSeconds(pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, participant);
     return formatTime(totalSeconds, true);
 };
 
@@ -67,9 +69,14 @@ export const calculateWinners = (participants, startTime, dateIndex = null, pige
     let lastWinnerName = "";
     let lastLandTimeStr = "";
 
-    const startSeconds = getSeconds(startTime || '06:00');
-
     (participants || []).forEach(p => {
+      // Determine the start time to use for this participant (and optionally for this day)
+      const pStartTime = (dateIndex !== null && dateIndex !== 'total' && p.dailyStartTimes) 
+        ? (p.dailyStartTimes[dateIndex] || p.startTime || startTime || '06:00')
+        : (p.startTime || startTime || '06:00');
+        
+      const startSeconds = getSeconds(pStartTime);
+
       let relevantTimes = [];
       if (dateIndex !== null && dateIndex !== 'total') {
         relevantTimes = (p.pigeonTimes || []).slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay).filter(t => t && t !== '');

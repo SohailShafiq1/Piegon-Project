@@ -5,6 +5,86 @@ import '../styles/Modal.css';
 import './Tournaments.css';
 import { calculateTotalTime, calculateGrandTotal, calculateWinners } from '../utils/calculations';
 
+// Helper function to deeply clean participant data for MongoDB
+const cleanParticipantForSave = (participant, numDays = 1, defaultStartTime = '06:00') => {
+  // First, use JSON to strip any Mongoose proxies or weird references
+  const plain = JSON.parse(JSON.stringify(participant));
+  
+  const cleaned = {
+    ownerId: plain.ownerId,
+    name: plain.name,
+    image: plain.image || '',
+    address: plain.address || '',
+    phone: plain.phone || '',
+    pigeonTimes: [],
+    totalTime: plain.totalTime || '00:00:00'
+  };
+
+  // Rebuild pigeonTimes as a clean array
+  if (plain.pigeonTimes) {
+    if (Array.isArray(plain.pigeonTimes)) {
+      cleaned.pigeonTimes = plain.pigeonTimes.map(t => String(t || ''));
+    } else if (typeof plain.pigeonTimes === 'object') {
+      // Handle object with numeric keys
+      const keys = Object.keys(plain.pigeonTimes).map(Number).sort((a, b) => a - b);
+      keys.forEach(key => {
+        cleaned.pigeonTimes[key] = String(plain.pigeonTimes[key] || '');
+      });
+    }
+  }
+
+  // Rebuild dailyStartTimes as a clean string array
+  if (plain.dailyStartTimes) {
+    const dailyArray = [];
+    
+    if (Array.isArray(plain.dailyStartTimes)) {
+      // Process each element
+      for (let i = 0; i < plain.dailyStartTimes.length; i++) {
+        const item = plain.dailyStartTimes[i];
+        
+        // If it's already a string, use it
+        if (typeof item === 'string' && item) {
+          dailyArray.push(item);
+        } 
+        // If it's an object (like {'1': '06:00'}), extract the first value
+        else if (typeof item === 'object' && item !== null) {
+          const values = Object.values(item).filter(v => typeof v === 'string' && v);
+          if (values.length > 0) {
+            dailyArray.push(values[0]);
+          } else {
+            dailyArray.push(defaultStartTime);
+          }
+        } 
+        // Otherwise use default
+        else {
+          dailyArray.push(defaultStartTime);
+        }
+      }
+    } else if (typeof plain.dailyStartTimes === 'object') {
+      // It's an object, extract values by numeric keys
+      for (let i = 0; i < numDays; i++) {
+        if (plain.dailyStartTimes[i]) {
+          dailyArray.push(String(plain.dailyStartTimes[i]));
+        } else {
+          dailyArray.push(defaultStartTime);
+        }
+      }
+    }
+    
+    // Only add if we have valid times
+    if (dailyArray.length > 0) {
+      cleaned.dailyStartTimes = dailyArray;
+    }
+  }
+
+  // Add startTime if present
+  if (plain.startTime && typeof plain.startTime === 'string') {
+    cleaned.startTime = plain.startTime;
+  }
+
+  return cleaned;
+};
+
 const Tournaments = () => {
   const [tournaments, setTournaments] = useState([]);
   const [admins, setAdmins] = useState([]);
@@ -194,14 +274,14 @@ const Tournaments = () => {
   };
 
   const handleTimeChange = (participantIndex, pigeonIndex, value) => {
-    // deep copy the participants array and the specific participant object to avoid mutation
-    const updatedParticipants = [...formData.participants];
-    const updatedParticipant = { 
-      ...updatedParticipants[participantIndex],
-      pigeonTimes: [...(updatedParticipants[participantIndex].pigeonTimes || [])]
-    };
+    // Get a clean copy via JSON to remove any Mongoose proxies
+    const plainParticipants = JSON.parse(JSON.stringify(formData.participants));
+    const updatedParticipant = plainParticipants[participantIndex];
     
     // Set the new time
+    if (!updatedParticipant.pigeonTimes) {
+      updatedParticipant.pigeonTimes = [];
+    }
     updatedParticipant.pigeonTimes[pigeonIndex] = value;
     
     // Recalculate grand total time
@@ -210,18 +290,81 @@ const Tournaments = () => {
       formData.numPigeons || 0,
       formData.startTime,
       formData.numDays || 1,
-      formData.numPigeons || 0
+      formData.numPigeons || 0,
+      updatedParticipant
     );
 
-    // Update the participant in the array
-    updatedParticipants[participantIndex] = updatedParticipant;
-
     // Recalculate First and Last Winners
-    const { firstWinner, firstTime, lastWinner, lastTime } = calculateWinners(updatedParticipants, formData.startTime);
+    const { firstWinner, firstTime, lastWinner, lastTime } = calculateWinners(plainParticipants, formData.startTime);
 
     setFormData({ 
       ...formData, 
-      participants: updatedParticipants,
+      participants: plainParticipants,
+      firstWinner,
+      firstTime,
+      lastWinner,
+      lastTime
+    });
+  };
+
+  const handleParticipantStartTimeChange = (participantIndex, activeDateIndex, value) => {
+    // Get a completely clean copy via JSON to remove any Mongoose proxies
+    const plainParticipants = JSON.parse(JSON.stringify(formData.participants));
+    const currentParticipant = plainParticipants[participantIndex];
+    
+    const totalDays = formData.numDays || 1;
+    const defaultStartTime = currentParticipant.startTime || formData.startTime || '06:00';
+    
+    // Build a new plain array for dailyStartTimes
+    const newDailyStartTimes = [];
+    
+    // First, populate with existing values or defaults
+    for (let i = 0; i < totalDays; i++) {
+      if (i === activeDateIndex) {
+        // This is the one we're updating
+        newDailyStartTimes[i] = value;
+      } else {
+        // Try to get existing value
+        let existingValue = defaultStartTime;
+        
+        if (currentParticipant.dailyStartTimes) {
+          if (Array.isArray(currentParticipant.dailyStartTimes) && currentParticipant.dailyStartTimes[i]) {
+            const item = currentParticipant.dailyStartTimes[i];
+            if (typeof item === 'string') {
+              existingValue = item;
+            } else if (typeof item === 'object' && item !== null) {
+              // Extract value from object
+              const values = Object.values(item).filter(v => typeof v === 'string');
+              if (values.length > 0) existingValue = values[0];
+            }
+          } else if (currentParticipant.dailyStartTimes[i]) {
+            existingValue = String(currentParticipant.dailyStartTimes[i]);
+          }
+        }
+        
+        newDailyStartTimes[i] = existingValue;
+      }
+    }
+    
+    // Update the participant with the new clean array
+    currentParticipant.dailyStartTimes = newDailyStartTimes;
+    
+    // Recalculate total time
+    currentParticipant.totalTime = calculateGrandTotal(
+      currentParticipant.pigeonTimes,
+      formData.numPigeons || 0,
+      formData.startTime,
+      formData.numDays || 1,
+      formData.numPigeons || 0,
+      currentParticipant
+    );
+
+    // Recalculate global winners
+    const { firstWinner, firstTime, lastWinner, lastTime } = calculateWinners(plainParticipants, formData.startTime);
+
+    setFormData({ 
+      ...formData, 
+      participants: plainParticipants,
       firstWinner,
       firstTime,
       lastWinner,
@@ -287,10 +430,13 @@ const Tournaments = () => {
     const totalPigeons = (formData.numPigeons || 0);
     const totalDays = (formData.numDays || 1);
     const initialTimes = Array(totalPigeons * totalDays).fill('');
+    const initialDailyStartTimes = Array(totalDays).fill(formData.startTime || '06:00');
     
     const participantWithTimes = {
       ...newParticipant,
       pigeonTimes: initialTimes,
+      dailyStartTimes: initialDailyStartTimes,
+      startTime: formData.startTime || '06:00',
       totalTime: "00:00:00"
     };
 
@@ -306,13 +452,21 @@ const Tournaments = () => {
     if (selectedTournament) {
       const token = localStorage.getItem('adminToken');
       try {
+        // Clean participants before saving
+        const cleanedFormData = {
+          ...updatedFormData,
+          participants: updatedParticipants.map(p => 
+            cleanParticipantForSave(p, formData.numDays || 1, formData.startTime || '06:00')
+          )
+        };
+        
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${selectedTournament._id}`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify(updatedFormData),
+          body: JSON.stringify(cleanedFormData),
         });
 
         if (response.ok) {
@@ -338,13 +492,21 @@ const Tournaments = () => {
     if (selectedTournament) {
       const token = localStorage.getItem('adminToken');
       try {
+        // Clean participants before saving
+        const cleanedFormData = {
+          ...updatedFormData,
+          participants: newParticipants.map(p => 
+            cleanParticipantForSave(p, formData.numDays || 1, formData.startTime || '06:00')
+          )
+        };
+        
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${selectedTournament._id}`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify(updatedFormData),
+          body: JSON.stringify(cleanedFormData),
         });
         fetchTournaments();
       } catch (error) {
@@ -446,6 +608,12 @@ const Tournaments = () => {
     }
 
     setSelectedTournament(t);
+    
+    // Clean participants to ensure proper array structures using helper
+    const cleanParticipants = (t.participants || []).map(p => 
+      cleanParticipantForSave(p, t.numDays || 1, t.startTime || '06:00')
+    );
+    
     setFormData({
       ...initialFormState,
       ...t,
@@ -453,7 +621,7 @@ const Tournaments = () => {
       startDate: t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       posters: t.posters || [],
       headline: t.headline || '',
-      participants: t.participants || [],
+      participants: cleanParticipants,
       firstWinner: t.firstWinner || '',
       firstTime: t.firstTime || '',
       lastWinner: t.lastWinner || '',
@@ -515,10 +683,22 @@ const Tournaments = () => {
     }
 
     const totalPigeonsPerDay = formData.numPigeons || 0;
-    const updatedParticipants = (formData.participants || []).map(p => ({
-        ...p,
-        totalTime: calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, formData.numPigeons || 0)
-    }));
+    const updatedParticipants = (formData.participants || []).map(p => {
+      // Use the cleaning helper to ensure proper arrays
+      const cleaned = cleanParticipantForSave(p, formData.numDays || 1, formData.startTime || '06:00');
+      
+      // Calculate total time with the cleaned participant
+      cleaned.totalTime = calculateGrandTotal(
+        cleaned.pigeonTimes, 
+        totalPigeonsPerDay, 
+        formData.startTime, 
+        formData.numDays || 1, 
+        formData.numPigeons || 0, 
+        cleaned
+      );
+      
+      return cleaned;
+    });
 
     // Recalculate winners one last time before saving
     const { firstWinner, firstTime, lastWinner, lastTime } = calculateWinners(updatedParticipants, formData.startTime);
@@ -548,6 +728,31 @@ const Tournaments = () => {
         flyingDates
     };
 
+    // VALIDATION: Check for any corrupted arrays before sending
+    console.log('=== VALIDATION CHECK ===');
+    tournamentToSave.participants.forEach((p, idx) => {
+      if (p.dailyStartTimes) {
+        console.log(`Participant ${idx} (${p.name}) dailyStartTimes:`, p.dailyStartTimes);
+        
+        // Check if any element is not a string - if so, fix it
+        p.dailyStartTimes = p.dailyStartTimes.map((time, timeIdx) => {
+          if (typeof time === 'string') {
+            return time;
+          } else if (typeof time === 'object' && time !== null) {
+            console.warn(`FIXING: Found object in dailyStartTimes[${timeIdx}], extracting value:`, time);
+            const values = Object.values(time).filter(v => typeof v === 'string');
+            return values.length > 0 ? values[0] : (formData.startTime || '06:00');
+          } else {
+            console.warn(`FIXING: Found non-string in dailyStartTimes[${timeIdx}]:`, time);
+            return String(time || formData.startTime || '06:00');
+          }
+        });
+        
+        console.log(`Participant ${idx} CLEANED dailyStartTimes:`, p.dailyStartTimes);
+      }
+    });
+    console.log('=== END VALIDATION ===');
+
     const method = selectedTournament ? 'PUT' : 'POST';
     const url = selectedTournament 
       ? `${import.meta.env.VITE_API_BASE_URL}/tournaments/${selectedTournament._id}`
@@ -567,6 +772,13 @@ const Tournaments = () => {
       if (response.ok) {
         const savedTournament = await response.json();
         
+        // Clean the returned tournament data before putting in state
+        if (savedTournament.participants) {
+          savedTournament.participants = savedTournament.participants.map(p => 
+            cleanParticipantForSave(p, formData.numDays || 1, formData.startTime || '06:00')
+          );
+        }
+        
         // If we were creating, we might want to go to list, 
         // but user asked to remain on screen.
         // Update selectedTournament so subsequent saves work correctly
@@ -576,7 +788,8 @@ const Tournaments = () => {
           ...prev,
           ...savedTournament,
           startDate: savedTournament.startDate ? new Date(savedTournament.startDate).toISOString().split('T')[0] : prev.startDate,
-          admin: savedTournament.admin?._id || savedTournament.admin
+          admin: savedTournament.admin?._id || savedTournament.admin,
+          participants: savedTournament.participants
         }));
         
         fetchTournaments();
@@ -771,8 +984,10 @@ const Tournaments = () => {
                                   <td className="start-time-cell">
                                     <input 
                                       type="time" 
-                                      value={formData.startTime}
-                                      onChange={(e) => setFormData({...formData, startTime: e.target.value})}
+                                      value={(p.dailyStartTimes && p.dailyStartTimes[activeDateIndex]) || p.startTime || formData.startTime}
+                                      onChange={(e) => {
+                                        handleParticipantStartTimeChange(pIndex, activeDateIndex, e.target.value);
+                                      }}
                                       className="start-time-table-input"
                                     />
                                   </td>
@@ -792,7 +1007,7 @@ const Tournaments = () => {
                                   })}
                                   <td className="total-time-cell">
                                     {calculateTotalTime(
-                                      formData.startTime, 
+                                      (p.dailyStartTimes && p.dailyStartTimes[activeDateIndex]) || p.startTime || formData.startTime, 
                                       (p.pigeonTimes || []).slice(activeDateIndex * totalPigeonsPerDay, (activeDateIndex + 1) * totalPigeonsPerDay), 
                                       formData.numPigeons || 0
                                     )}
@@ -803,10 +1018,11 @@ const Tournaments = () => {
                                   {flyingDates.map((_, idx) => {
                                      // For total view, we don't highlight individual boxes easily here 
                                      // as it's a summary of daily totals
+                                     const dayStartTime = (p.dailyStartTimes && p.dailyStartTimes[idx]) || p.startTime || formData.startTime;
                                      return (
                                       <td key={idx} className="daily-total-cell">
                                         {calculateTotalTime(
-                                          formData.startTime, 
+                                          dayStartTime, 
                                           (p.pigeonTimes || []).slice(idx * totalPigeonsPerDay, (idx + 1) * totalPigeonsPerDay), 
                                           formData.numPigeons || 0
                                           )}
@@ -814,7 +1030,7 @@ const Tournaments = () => {
                                      )
                                   })}
                                   <td className="grand-total-cell">
-                                    {calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, formData.numPigeons || 0)}
+                                    {calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, formData.numPigeons || 0, p)}
                                   </td>
                                 </>
                               )}
