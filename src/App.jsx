@@ -44,12 +44,12 @@ function Home() {
           const active = data.find(t => t.status === 'Active') || data[0];
           setActiveTournament(active);
 
-          // Smart date selection based on current date
+          // Smart date selection: show current day if flying date, total on break days during tournament
           const today = new Date();
           today.setHours(0, 0, 0, 0);
 
           const flyingDatesArr = active.flyingDates || [];
-          let bestIdx = 0;
+          let bestIdx = 'total';
 
           if (flyingDatesArr.length > 0) {
             const firstDate = new Date(flyingDatesArr[0]);
@@ -58,23 +58,18 @@ function Home() {
             const lastDate = new Date(flyingDatesArr[flyingDatesArr.length - 1]);
             lastDate.setHours(0, 0, 0, 0);
 
-            if (today <= firstDate) {
-              bestIdx = 0;
-            } else if (today >= lastDate) {
-              bestIdx = flyingDatesArr.length - 1;
-            } else {
-              // We are between start and end. Find exact match or the latest one that has passed.
-              for (let i = 0; i < flyingDatesArr.length; i++) {
-                const d = new Date(flyingDatesArr[i]);
-                d.setHours(0, 0, 0, 0);
-                if (today.getTime() === d.getTime()) {
-                  bestIdx = i;
-                  break;
-                } else if (d < today) {
-                  bestIdx = i; // Keep tracking the latest date that is before or equal to today
-                }
+            // Check if today is a flying date
+            for (let i = 0; i < flyingDatesArr.length; i++) {
+              const d = new Date(flyingDatesArr[i]);
+              d.setHours(0, 0, 0, 0);
+              if (today.getTime() === d.getTime()) {
+                bestIdx = i;
+                break;
               }
             }
+            // If not on a flying date but between first and last, show total (break day)
+            // Otherwise if before first or after last, also show total
+            // bestIdx already defaults to 'total'
           }
           setActiveDateIndex(bestIdx);
         }
@@ -154,12 +149,12 @@ function TournamentView() {
         const data = await response.json();
         setTournament(data);
 
-        // Smart date selection based on current date
+        // Smart date selection: show current day if flying date, total on break days during tournament
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
         const flyingDatesArr = data.flyingDates || [];
-        let bestIdx = 0;
+        let bestIdx = 'total';
 
         if (flyingDatesArr.length > 0) {
           const firstDate = new Date(flyingDatesArr[0]);
@@ -168,23 +163,18 @@ function TournamentView() {
           const lastDate = new Date(flyingDatesArr[flyingDatesArr.length - 1]);
           lastDate.setHours(0, 0, 0, 0);
 
-          if (today <= firstDate) {
-            bestIdx = 0;
-          } else if (today >= lastDate) {
-            bestIdx = flyingDatesArr.length - 1;
-          } else {
-            // We are between start and end. Find exact match or the latest one that has passed.
-            for (let i = 0; i < flyingDatesArr.length; i++) {
-              const d = new Date(flyingDatesArr[i]);
-              d.setHours(0, 0, 0, 0);
-              if (today.getTime() === d.getTime()) {
-                bestIdx = i;
-                break;
-              } else if (d < today) {
-                bestIdx = i; // Keep tracking the latest date that is before or equal to today
-              }
+          // Check if today is a flying date
+          for (let i = 0; i < flyingDatesArr.length; i++) {
+            const d = new Date(flyingDatesArr[i]);
+            d.setHours(0, 0, 0, 0);
+            if (today.getTime() === d.getTime()) {
+              bestIdx = i;
+              break;
             }
           }
+          // If not on a flying date but between first and last, show total (break day)
+          // Otherwise if before first or after last, also show total
+          // bestIdx already defaults to 'total'
         }
         setActiveDateIndex(bestIdx);
 
