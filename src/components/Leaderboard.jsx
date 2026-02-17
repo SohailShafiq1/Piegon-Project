@@ -118,12 +118,9 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                     let cellClass = "";
                     if (time && time !== '-' && dateIndex !== 'total') {
                        const dayTimes = p.pigeonTimes.slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay).filter(t => t && t !== '');
-                       const isFirst = time === dayTimes[0];
                        const isLast = time === dayTimes[dayTimes.length - 1];
 
-                       if (isFirst && p.name === winners.firstWinner && time === winners.firstTime) {
-                         cellClass = "winning-time-cell";
-                       } else if (isLast && p.name === winners.lastWinner && time === winners.lastTime) {
+                       if (isLast && p.name === winners.lastWinner && time === winners.lastTime) {
                          cellClass = "winning-time-cell";
                        }
                     }
