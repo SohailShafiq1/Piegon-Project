@@ -45,16 +45,16 @@
 }
 
 .contact-nav-button {
-  background-color: #ffffff;
-  color: #004a99 !important;
-  padding: 5px 15px; /* Slightly larger button */
-  border-radius: 4px;
-  font-weight: bold;
-  transition: background 0.2s;
+  background-color: transparent;
+  color: white !important;
+  padding: 0; /* Remove button-like padding */
+  border-radius: 0; /* Remove border radius */
+  font-weight: 600; /* Match other nav links */
+  transition: opacity 0.2s;
 }
 
 .contact-nav-button:hover {
-  background-color: #e0e0e0;
+  opacity: 0.8; /* Subtle hover effect */
 }
 
 .current-users {
