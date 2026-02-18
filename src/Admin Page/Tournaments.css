@@ -850,7 +850,7 @@
 }
 
 .owners-table th {
-  background-color: #1a202c; /* Navy header for professional look */
+  background-color: #f3cf66; /* Dark yellow header */
   padding: 18px 16px;
   font-weight: 600;
   color: #ffffff;
@@ -1365,11 +1365,11 @@
 }
 
 .time-table th {
-  background-color: #f8fafc;
+  background-color: #cc9900;
   padding: 12px 16px;
   text-align: left;
   border-bottom: 2px solid #edf2f7;
-  color: #4a5568;
+  color: #ffffff;
   text-transform: capitalize;
   font-weight: 600;
   white-space: nowrap;

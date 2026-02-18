@@ -86,8 +86,8 @@
 }
 
 .leaderboard-table th {
-  background-color: #fffdec; /* Light yellow top row */
-  color: #333;
+  background-color: #f3cf66; /* Dark yellow top row */
+  color: #ffffff;
   padding: 8px 4px;
   font-weight: 700;
   font-size: 0.75rem;
