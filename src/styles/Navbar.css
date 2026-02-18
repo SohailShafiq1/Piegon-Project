@@ -70,6 +70,27 @@
   z-index: 10;
 }
 
+/* Mobile styles for smaller text */
+@media (max-width: 768px) {
+  .nav-brand {
+    font-size: 0.9rem; /* Smaller brand name for mobile */
+  }
+  
+  .nav-links li a {
+    font-size: 0.7rem; /* Smaller navigation links for mobile */
+  }
+  
+  .contact-nav-button {
+    font-size: 0.7rem; /* Smaller contact button text */
+    padding: 4px 12px; /* Slightly smaller padding */
+  }
+  
+  .current-users {
+    font-size: 0.6rem; /* Smaller current users text */
+    padding: 3px 6px; /* Smaller padding */
+  }
+}
+
 @media (min-width: 769px) {
   .nav-brand {
     font-size: 1.3rem;

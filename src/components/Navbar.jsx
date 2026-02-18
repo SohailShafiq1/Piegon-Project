@@ -34,7 +34,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="nav-container">
-        <Link to="/" className="nav-brand">kotlapigeon</Link>
+        
         <ul className="nav-links">
           {leagues.map((league) => (
             <li key={league}>
@@ -56,9 +56,7 @@ const Navbar = () => {
             <Link to="/contact" className="contact-nav-button">Contact</Link>
           </li>
         </ul>
-        <div className="current-users">
-          Current users: 1
-        </div>
+        
       </div>
     </nav>
   );
