@@ -12,7 +12,7 @@
   padding: 6px 5px; /* More compact */
   background-color: #fcfcfc;
   border-bottom: 2px solid #f0f0f0;
-  margin-bottom: 8px;
+  margin-bottom: 0; /* Remove gap between winners and table */
   flex-wrap: nowrap; /* Force one line */
   overflow-x: hidden; /* Prevent horizontal scroll from banner */
 }
@@ -76,6 +76,7 @@
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  margin-top: 0; /* Remove any top margin */
 }
 
 .leaderboard-table {
@@ -83,6 +84,7 @@
   border-collapse: collapse;
   font-family: 'Segoe UI', Tahoma, sans-serif;
   background: #fff;
+  margin-top: 0; /* Remove any top margin */
 }
 
 .leaderboard-table th {

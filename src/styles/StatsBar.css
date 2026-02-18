@@ -10,14 +10,15 @@
 
 .title-urdu {
   color: #333;
-
+  margin: 0; /* Remove all margins */
   font-size: 1.2rem; /* Even smaller title */
   font-weight: bold;
+  
 }
 
 .start-time {
   color: #666;
-  margin: 1px 0; /* 1px top and bottom margin */
+  margin: -13px 0 0 0; /* Negative top margin to pull closer */
   font-size: 0.85rem;
 }
 
