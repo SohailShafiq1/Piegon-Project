@@ -199,7 +199,7 @@ function TournamentView() {
       <div className="main-content">
         <div className="announcement">
           <marquee behavior="scroll" direction="right">
-              {tournament.headline || ` - کوٹلہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
+              {tournament.headline || ` -  کوٹلہ کمیٹی کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
            
             {newsList.map(news => (
                <span key={news._id} style={{ marginLeft: '100px' }}>
