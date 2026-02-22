@@ -15,6 +15,7 @@ const LeagueView = () => {
   useEffect(() => {
     const fetchLeagueTournaments = async () => {
       try {
+        // Make sure to pull summaries here so the page loads instantly and maps cleanly
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`);
         const data = await response.json();
         // Filter by league name and active status
@@ -46,7 +47,7 @@ const LeagueView = () => {
             کوٹلہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز آف لک اللہ پاک آپ سبکو سلامت رکھے اور کامیاب کرے
           </marquee>
         </div>
-        
+
         <div className="league-content">
           <div className="league-section-banner">
             {decodeURIComponent(leagueName) === 'Independent' ? "Other Independent Tournaments" : decodeURIComponent(leagueName)}
@@ -62,7 +63,7 @@ const LeagueView = () => {
                         <h3 className="tournament-name-blue">{t.name}</h3>
                       </Link>
                       <p className="tournament-dates-mini">
-                        {new Date(t.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - 
+                        {new Date(t.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} -
                         {new Date(t.flyingDates?.[t.flyingDates.length - 1] || t.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </p>
                     </div>
@@ -81,30 +82,30 @@ const LeagueView = () => {
                         </thead>
                         <tbody>
                           {t.participants && t.participants.length > 0 ? (() => {
-                              const scoringPigeons = t.noteTimePigeons || t.numPigeons || 0;
-                              const helperPigeons = t.helperPigeons || 0;
-                              return [...t.participants]
-                                .sort((a, b) => {
-                                  const aSecs = calculateGrandTotalSeconds(a.pigeonTimes, t.numPigeons, t.startTime, t.numDays, scoringPigeons, helperPigeons, a);
-                                  const bSecs = calculateGrandTotalSeconds(b.pigeonTimes, t.numPigeons, t.startTime, t.numDays, scoringPigeons, helperPigeons, b);
-                                  return bSecs - aSecs;
-                                })
-                                .slice(0, 7)
-                                .map((p, idx) => (
-                                  <tr key={idx}>
-                                    <td className="pos-cell">{idx + 1}</td>
-                                    <td className="photo-cell">
-                                      <img src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" />
-                                    </td>
-                                    <td className="name-cell-urdu">{p.name}</td>
-                                    <td className="city-cell">{p.address || '-'}</td>
-                                    <td className="total-cell-bold">
-                                      {calculateGrandTotal(p.pigeonTimes, t.numPigeons, t.startTime, t.numDays, scoringPigeons, helperPigeons, p)}
-                                    </td>
-                                    <td className="prize-cell"></td>
-                                  </tr>
-                                ));
-                            })() : (
+                            const scoringPigeons = t.noteTimePigeons || t.numPigeons || 0;
+                            const helperPigeons = t.helperPigeons || 0;
+                            return [...t.participants]
+                              .sort((a, b) => {
+                                const aSecs = calculateGrandTotalSeconds(a.pigeonTimes, t.numPigeons, t.startTime, t.numDays, scoringPigeons, helperPigeons, a);
+                                const bSecs = calculateGrandTotalSeconds(b.pigeonTimes, t.numPigeons, t.startTime, t.numDays, scoringPigeons, helperPigeons, b);
+                                return bSecs - aSecs;
+                              })
+                              .slice(0, 7)
+                              .map((p, idx) => (
+                                <tr key={idx}>
+                                  <td className="pos-cell">{idx + 1}</td>
+                                  <td className="photo-cell">
+                                    <img loading="lazy" src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" className="player-img-league" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+                                  </td>
+                                  <td className="name-cell-urdu">{p.name}</td>
+                                  <td className="city-cell">{p.address || '-'}</td>
+                                  <td className="total-cell-bold">
+                                    {calculateGrandTotal(p.pigeonTimes, t.numPigeons, t.startTime, t.numDays, scoringPigeons, helperPigeons, p)}
+                                  </td>
+                                  <td className="prize-cell"></td>
+                                </tr>
+                              ));
+                          })() : (
                             <tr>
                               <td colSpan="6" className="no-data">No participants</td>
                             </tr>

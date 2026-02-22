@@ -8,14 +8,15 @@ import DateTabs from './components/DateTabs';
 import Leaderboard from './components/Leaderboard';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
-import AdminDashboard from './Admin Page/AdminDashboard';
-import Tournaments from './Admin Page/Tournaments';
-import Categories from './Admin Page/Categories';
-import News from './Admin Page/News';
-import AdminLogin from './Admin Page/AdminLogin';
-import ManageAdmins from './Admin Page/ManageAdmins';
-import ManageOwners from './Admin Page/ManageOwners';
-import GeneralSettings from './Admin Page/GeneralSettings';
+const DashboardHome = React.lazy(() => import('./Admin Page/DashboardHome'));
+const AdminDashboard = React.lazy(() => import('./Admin Page/AdminDashboard'));
+const Tournaments = React.lazy(() => import('./Admin Page/Tournaments'));
+const Categories = React.lazy(() => import('./Admin Page/Categories'));
+const News = React.lazy(() => import('./Admin Page/News'));
+const AdminLogin = React.lazy(() => import('./Admin Page/AdminLogin'));
+const ManageAdmins = React.lazy(() => import('./Admin Page/ManageAdmins'));
+const ManageOwners = React.lazy(() => import('./Admin Page/ManageOwners'));
+const GeneralSettings = React.lazy(() => import('./Admin Page/GeneralSettings'));
 import LeagueView from './LeagueView';
 import './App.css';
 
@@ -37,24 +38,30 @@ function Home() {
           console.error("News fetch error:", e);
         }
 
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`);
+        // 1. Fetch lightweight tournament summaries
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments?summary=true`);
         const data = await response.json();
+
         if (data.length > 0) {
-          // Find the most recent active tournament
-          const active = data.find(t => t.status === 'Active') || data[0];
-          setActiveTournament(active);
+          // Find the most recent active tournament summary
+          const activeSummary = data.find(t => t.status === 'Active') || data[0];
+
+          // 2. Fetch ONLY the active tournament's full details (with participants)
+          const activeRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${activeSummary._id}`);
+          const activeFull = await activeRes.json();
+          setActiveTournament(activeFull);
 
           // Smart date selection: show current day if flying date, total on break days during tournament
           const today = new Date();
           today.setHours(0, 0, 0, 0);
 
-          const flyingDatesArr = active.flyingDates || [];
+          const flyingDatesArr = activeFull.flyingDates || [];
           let bestIdx = 'total';
 
           if (flyingDatesArr.length > 0) {
             const firstDate = new Date(flyingDatesArr[0]);
             firstDate.setHours(0, 0, 0, 0);
-            
+
             const lastDate = new Date(flyingDatesArr[flyingDatesArr.length - 1]);
             lastDate.setHours(0, 0, 0, 0);
 
@@ -102,22 +109,22 @@ function Home() {
         <div className="announcement">
           <marquee behavior="scroll" direction="right">
             {newsList.map(news => (
-               <span key={news._id} style={{ marginLeft: '100px' }}>
-                 {news.title}: {news.content}
-               </span>
+              <span key={news._id} style={{ marginLeft: '100px' }}>
+                {news.title}: {news.content}
+              </span>
             ))}
           </marquee>
         </div>
 
         <StatsBar tournament={activeTournament} dateIndex={activeDateIndex} />
-        <DateTabs 
-          dates={flyingDates} 
-          activeDateIndex={activeDateIndex} 
-          onDateChange={setActiveDateIndex} 
+        <DateTabs
+          dates={flyingDates}
+          activeDateIndex={activeDateIndex}
+          onDateChange={setActiveDateIndex}
         />
-        <Leaderboard 
-          tournament={activeTournament} 
-          dateIndex={activeDateIndex} 
+        <Leaderboard
+          tournament={activeTournament}
+          dateIndex={activeDateIndex}
         />
       </div>
       <Footer />
@@ -158,7 +165,7 @@ function TournamentView() {
         if (flyingDatesArr.length > 0) {
           const firstDate = new Date(flyingDatesArr[0]);
           firstDate.setHours(0, 0, 0, 0);
-          
+
           const lastDate = new Date(flyingDatesArr[flyingDatesArr.length - 1]);
           lastDate.setHours(0, 0, 0, 0);
 
@@ -197,25 +204,25 @@ function TournamentView() {
       <div className="main-content">
         <div className="announcement">
           <marquee behavior="scroll" direction="right">
-              {tournament.headline || ` -  کوٹلہ کمیٹی کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
-           
+            {tournament.headline || ` -  کوٹلہ کمیٹی کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز`}
+
             {newsList.map(news => (
-               <span key={news._id} style={{ marginLeft: '100px' }}>
-                 {news.title}: {news.content}
-               </span>
+              <span key={news._id} style={{ marginLeft: '100px' }}>
+                {news.title}: {news.content}
+              </span>
             ))}
           </marquee>
         </div>
 
         <StatsBar tournament={tournament} dateIndex={activeDateIndex} />
-        <DateTabs 
-          dates={flyingDates} 
-          activeDateIndex={activeDateIndex} 
-          onDateChange={setActiveDateIndex} 
+        <DateTabs
+          dates={flyingDates}
+          activeDateIndex={activeDateIndex}
+          onDateChange={setActiveDateIndex}
         />
-        <Leaderboard 
-          tournament={tournament} 
-          dateIndex={activeDateIndex} 
+        <Leaderboard
+          tournament={tournament}
+          dateIndex={activeDateIndex}
         />
       </div>
       <Footer />
@@ -223,80 +230,38 @@ function TournamentView() {
   );
 }
 
-const DashboardHome = () => {
-  const [stats, setStats] = useState({ tournaments: 0, owners: 0, admins: 0 });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const token = localStorage.getItem('adminToken');
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admins/stats`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setStats(data);
-        }
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-        setLoading(false);
-      }
-    };
-    fetchStats();
-  }, []);
-
-  return (
-    <>
-      <h1>Welcome to Admin Dashboard</h1>
-      <div className="stats-grid">
-        <div className="stat-card">
-          <h3>Total Tournaments</h3>
-          <p>{stats.tournaments}</p>
-        </div>
-        <div className="stat-card">
-          <h3>Piegon Owners</h3>
-          <p>{stats.owners}</p>
-        </div>
-        <div className="stat-card">
-          <h3>Active Admins</h3>
-          <p>{stats.admins}</p>
-        </div>
-      </div>
-    </>
-  );
-};
 
 function App() {
   return (
     <Router>
       <div className="app-container">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/league/:leagueName" element={<LeagueView />} />
-          <Route path="/tournament/:id" element={<TournamentView />} />
-          <Route path="/contact" element={
-            <>
-              <Banner />
-              <Navbar />
-              <div className="main-content">
-                <Contact />
-              </div>
-              <Footer />
-            </>
-          } />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/*" element={<AdminDashboard />}>
-            <Route index element={<DashboardHome />} />
-            <Route path="tournaments" element={<Tournaments />} />
-            <Route path="categories" element={<Categories />} />
-            <Route path="owners" element={<ManageOwners />} />
-            <Route path="news" element={<News />} />
-            <Route path="users" element={<ManageAdmins />} />
-            <Route path="settings" element={<GeneralSettings />} />
-          </Route>
-        </Routes>
+        <React.Suspense fallback={<div className="loading-screen" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading App...</div>}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/league/:leagueName" element={<LeagueView />} />
+            <Route path="/tournament/:id" element={<TournamentView />} />
+            <Route path="/contact" element={
+              <>
+                <Banner />
+                <Navbar />
+                <div className="main-content">
+                  <Contact />
+                </div>
+                <Footer />
+              </>
+            } />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/*" element={<AdminDashboard />}>
+              <Route index element={<DashboardHome />} />
+              <Route path="tournaments" element={<Tournaments />} />
+              <Route path="categories" element={<Categories />} />
+              <Route path="owners" element={<ManageOwners />} />
+              <Route path="news" element={<News />} />
+              <Route path="users" element={<ManageAdmins />} />
+              <Route path="settings" element={<GeneralSettings />} />
+            </Route>
+          </Routes>
+        </React.Suspense>
       </div>
     </Router>
   );

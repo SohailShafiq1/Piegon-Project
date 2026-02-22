@@ -50,13 +50,13 @@ const Banner = ({ posters }) => {
   return (
     <div className="banner">
       <div className="banner-content">
-        <img src={images[currentIndex]} alt={`Slide ${currentIndex + 1}`} className="banner-image" />
+        <img loading="lazy" src={images[currentIndex]} alt={`Slide ${currentIndex + 1}`} className="banner-image" />
         <div className="overlay-controls">
           <span className="arrow prev" onClick={() => setCurrentIndex((currentIndex - 1 + images.length) % images.length)}>&lt;</span>
           <div className="dots">
             {images.map((_, index) => (
-              <span 
-                key={index} 
+              <span
+                key={index}
                 className={`dot ${index === currentIndex ? 'active' : ''}`}
                 onClick={() => setCurrentIndex(index)}
               ></span>

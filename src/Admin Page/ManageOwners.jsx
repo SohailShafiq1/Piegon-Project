@@ -21,6 +21,10 @@ const ManageOwners = () => {
   const fetchOwners = async () => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/owners`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });

@@ -15,6 +15,7 @@ const ManageAdmins = () => {
   const token = localStorage.getItem('adminToken');
 
   const fetchAdmins = useCallback(async () => {
+    if (!token) return;
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admins`, {
         headers: {
@@ -42,10 +43,10 @@ const ManageAdmins = () => {
     setMessage('');
     setError('');
 
-    const url = editAdminId 
+    const url = editAdminId
       ? `${import.meta.env.VITE_API_BASE_URL}/admins/${editAdminId}`
       : `${import.meta.env.VITE_API_BASE_URL}/admins`;
-    
+
     const method = editAdminId ? 'PUT' : 'POST';
 
     try {
@@ -125,36 +126,36 @@ const ManageAdmins = () => {
   return (
     <div className="manage-admins">
       <h3>Manage Admins</h3>
-      
+
       <div className="admin-form-card">
         <h4>{editAdminId ? 'Update Admin' : 'Create New Admin'}</h4>
         <form onSubmit={handleSubmit}>
           <div className="form-grid">
             <div className="form-group">
               <label>Name (Required)</label>
-              <input 
-                type="text" 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
-                required 
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
               />
             </div>
             <div className="form-group">
               <label>Email (Optional)</label>
-              <input 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 autoComplete="off"
               />
             </div>
             <div className="form-group">
               <label>{editAdminId ? 'Password (Leave blank to keep current)' : 'Password (Required)'}</label>
-              <input 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                required={!editAdminId} 
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required={!editAdminId}
                 autoComplete="new-password"
               />
             </div>
@@ -205,15 +206,15 @@ const ManageAdmins = () => {
                   <td>{new Date(admin.createdAt).toLocaleDateString()}</td>
                   <td>
                     <div className="action-buttons">
-                      <button 
-                        className="edit-btn" 
+                      <button
+                        className="edit-btn"
                         onClick={() => handleEdit(admin)}
                         disabled={admin.name === 'Admin' && currentUser.name !== 'Admin'}
                       >
                         Edit
                       </button>
-                      <button 
-                        className="delete-btn" 
+                      <button
+                        className="delete-btn"
                         onClick={() => handleDelete(admin._id)}
                         disabled={admin._id === currentUser.id || admin.name === 'Admin'}
                       >

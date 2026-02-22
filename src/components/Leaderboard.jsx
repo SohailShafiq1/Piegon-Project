@@ -1,11 +1,11 @@
 import React from 'react';
 import '../styles/Leaderboard.css';
-import { 
-  calculateTotalTime, 
-  calculateGrandTotal, 
-  calculateWinners, 
-  calculateTotalSeconds, 
-  calculateGrandTotalSeconds 
+import {
+  calculateTotalTime,
+  calculateGrandTotal,
+  calculateWinners,
+  calculateTotalSeconds,
+  calculateGrandTotalSeconds
 } from '../utils/calculations';
 
 const Leaderboard = ({ tournament, dateIndex }) => {
@@ -26,7 +26,7 @@ const Leaderboard = ({ tournament, dateIndex }) => {
     if (!name) return "";
     const words = name.split(/\s+/);
     if (words.length <= 3) return name;
-    
+
     // Split long names into two lines to save horizontal space
     const firstPart = words.slice(0, 3).join(' ');
     const secondPart = words.slice(3).join(' ');
@@ -95,7 +95,7 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                 ))
               ) : (
                 tournament.flyingDates.map((_, idx) => (
-                   <th key={idx}>Day {idx + 1}</th>
+                  <th key={idx}>Day {idx + 1}</th>
                 ))
               )}
               <th>Total</th>
@@ -106,25 +106,25 @@ const Leaderboard = ({ tournament, dateIndex }) => {
               <tr key={idx}>
                 <td>{idx + 1}</td>
                 <td className="name-cell">
-                   <div className="player-info">
-                     <img src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" className="player-img" />
-                     <span>{formatPlayerName(p.name)}</span>
-                   </div>
+                  <div className="player-info">
+                    <img loading="lazy" src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" className="player-img" />
+                    <span>{formatPlayerName(p.name)}</span>
+                  </div>
                 </td>
                 {dateIndex !== 'total' && <td>{formatDisplayTime((p.dailyStartTimes && p.dailyStartTimes[dateIndex]) || p.startTime || startTime)}</td>}
                 {dateIndex !== 'total' ? (
                   [...Array(pigeonsPerDay)].map((_, pIdx) => {
                     const time = p.pigeonTimes[dateIndex * pigeonsPerDay + pIdx];
-                    
+
                     // Logic for blinking winning time
                     let cellClass = "";
                     if (time && time !== '-' && dateIndex !== 'total') {
-                       const dayTimes = p.pigeonTimes.slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay).filter(t => t && t !== '');
-                       const isLast = time === dayTimes[dayTimes.length - 1];
+                      const dayTimes = p.pigeonTimes.slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay).filter(t => t && t !== '');
+                      const isLast = time === dayTimes[dayTimes.length - 1];
 
-                       if (isLast && p.name === winners.lastWinner && time === winners.lastTime) {
-                         cellClass = "winning-time-cell";
-                       }
+                      if (isLast && p.name === winners.lastWinner && time === winners.lastTime) {
+                        cellClass = "winning-time-cell";
+                      }
                     }
 
                     return <td key={pIdx} className={cellClass}>{formatDisplayTime(time)}</td>;
@@ -140,14 +140,14 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                   })
                 )}
                 <td className="total-cell">
-                  {dateIndex === 'total' 
-                      ? calculateGrandTotal(p.pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, helperPigeons, p)
+                  {dateIndex === 'total'
+                    ? calculateGrandTotal(p.pigeonTimes, pigeonsPerDay, startTime, numDays, scoringPigeons, helperPigeons, p)
                     : calculateTotalTime(
-                        (p.dailyStartTimes && p.dailyStartTimes[dateIndex]) || p.startTime || startTime,
-                        p.pigeonTimes.slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay),
-                          scoringPigeons,
-                          helperPigeons
-                      )
+                      (p.dailyStartTimes && p.dailyStartTimes[dateIndex]) || p.startTime || startTime,
+                      p.pigeonTimes.slice(dateIndex * pigeonsPerDay, (dateIndex + 1) * pigeonsPerDay),
+                      scoringPigeons,
+                      helperPigeons
+                    )
                   }
                 </td>
               </tr>

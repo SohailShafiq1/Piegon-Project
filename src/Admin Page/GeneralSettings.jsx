@@ -51,7 +51,7 @@ const GeneralSettings = () => {
         const updated = [...defaultPosters];
         updated.splice(index, 1);
         setDefaultPosters(updated);
-        
+
         // Also remove from new files if it was newly added
         // This is tricky if we don't track which is which
     };
@@ -60,11 +60,12 @@ const GeneralSettings = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('adminToken');
-            
+            if (!token) return;
+
             // Create FormData for multipart upload
             const formData = new FormData();
             formData.append('key', 'defaultPosters');
-            
+
             // Keep existing poster URLs that are not base64
             const existingPosters = defaultPosters.filter(p => !p.startsWith('data:'));
             formData.append('value', JSON.stringify(existingPosters));
@@ -121,11 +122,11 @@ const GeneralSettings = () => {
                             </div>
                         ))}
                         <label className="add-poster-card">
-                            <input 
-                                type="file" 
-                                multiple 
-                                accept="image/*" 
-                                onChange={handleImageUpload} 
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={handleImageUpload}
                                 style={{ display: 'none' }}
                             />
                             <FaPlus />

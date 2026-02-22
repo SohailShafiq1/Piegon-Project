@@ -11,7 +11,11 @@ const Categories = () => {
   const fetchTournaments = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`, {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments?summary=true`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -70,15 +74,15 @@ const Categories = () => {
                   <td style={{ fontWeight: '600' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <FaUsers style={{ color: '#4a5568' }} />
-                      {(t.participants || []).length} Participants
+                      {t.participantCount || 0} Participants
                     </div>
                   </td>
                   <td>
                     {t.numPigeons || 0} Pigeons / {t.helperPigeons || 0} Helpers
                   </td>
                   <td>
-                    <button 
-                      className="edit-link" 
+                    <button
+                      className="edit-link"
                       onClick={() => navigate('/admin/tournaments')}
                       style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
                     >

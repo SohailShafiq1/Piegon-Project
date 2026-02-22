@@ -9,7 +9,7 @@ import { calculateTotalTime, calculateGrandTotal, calculateWinners } from '../ut
 const cleanParticipantForSave = (participant, numDays = 1, defaultStartTime = '06:00') => {
   // First, use JSON to strip any Mongoose proxies or weird references
   const plain = JSON.parse(JSON.stringify(participant));
-  
+
   const cleaned = {
     ownerId: plain.ownerId,
     name: plain.name,
@@ -36,16 +36,16 @@ const cleanParticipantForSave = (participant, numDays = 1, defaultStartTime = '0
   // Rebuild dailyStartTimes as a clean string array
   if (plain.dailyStartTimes) {
     const dailyArray = [];
-    
+
     if (Array.isArray(plain.dailyStartTimes)) {
       // Process each element
       for (let i = 0; i < plain.dailyStartTimes.length; i++) {
         const item = plain.dailyStartTimes[i];
-        
+
         // If it's already a string, use it
         if (typeof item === 'string' && item) {
           dailyArray.push(item);
-        } 
+        }
         // If it's an object (like {'1': '06:00'}), extract the first value
         else if (typeof item === 'object' && item !== null) {
           const values = Object.values(item).filter(v => typeof v === 'string' && v);
@@ -54,7 +54,7 @@ const cleanParticipantForSave = (participant, numDays = 1, defaultStartTime = '0
           } else {
             dailyArray.push(defaultStartTime);
           }
-        } 
+        }
         // Otherwise use default
         else {
           dailyArray.push(defaultStartTime);
@@ -70,7 +70,7 @@ const cleanParticipantForSave = (participant, numDays = 1, defaultStartTime = '0
         }
       }
     }
-    
+
     // Only add if we have valid times
     if (dailyArray.length > 0) {
       cleaned.dailyStartTimes = dailyArray;
@@ -95,7 +95,7 @@ const Tournaments = () => {
   const [showLeagueModal, setShowLeagueModal] = useState(false);
   const [leagueFormData, setLeagueFormData] = useState({ name: '', description: '', admin: '' });
   const [editingLeague, setEditingLeague] = useState(null);
-  
+
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', message: '', onConfirm: null, confirmText: 'OK' });
@@ -141,22 +141,26 @@ const Tournaments = () => {
 
   const fetchTournaments = useCallback(async () => {
     const token = localStorage.getItem('adminToken');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments?summary=true`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       const data = await response.json();
-      
+
       // Sort tournaments: User's assigned tournaments first (or their league's tournaments)
       const sortedTournaments = [...data].sort((a, b) => {
         const isAAdmin = (a.admin?._id || a.admin) === currentUser?.id;
         const isBAdmin = (b.admin?._id || b.admin) === currentUser?.id;
-        
+
         const leagueA = leagues.find(l => l.name === a.leagueName);
         const leagueB = leagues.find(l => l.name === b.leagueName);
-        
+
         const isALeagueAdmin = (leagueA?.admin?._id || leagueA?.admin) === currentUser?.id;
         const isBLeagueAdmin = (leagueB?.admin?._id || leagueB?.admin) === currentUser?.id;
 
@@ -178,6 +182,7 @@ const Tournaments = () => {
 
   const fetchAdmins = useCallback(async () => {
     const token = localStorage.getItem('adminToken');
+    if (!token) return;
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admins`, {
         headers: {
@@ -207,6 +212,7 @@ const Tournaments = () => {
   const searchGlobalOwners = useCallback(async () => {
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) return;
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/owners/search?q=${ownerSearch}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -261,7 +267,7 @@ const Tournaments = () => {
     if (!name) return "";
     const words = name.split(/\s+/);
     if (words.length <= 3) return name;
-    
+
     // Split long names into two lines to save horizontal space
     const firstPart = words.slice(0, 3).join(' ');
     const secondPart = words.slice(3).join(' ');
@@ -278,13 +284,13 @@ const Tournaments = () => {
     // Get a clean copy via JSON to remove any Mongoose proxies
     const plainParticipants = JSON.parse(JSON.stringify(formData.participants));
     const updatedParticipant = plainParticipants[participantIndex];
-    
+
     // Set the new time
     if (!updatedParticipant.pigeonTimes) {
       updatedParticipant.pigeonTimes = [];
     }
     updatedParticipant.pigeonTimes[pigeonIndex] = value;
-    
+
     const scoringPigeons = formData.noteTimePigeons || formData.numPigeons || 0;
     const helperPigeons = formData.helperPigeons || 0;
 
@@ -302,8 +308,8 @@ const Tournaments = () => {
     // Recalculate First and Last Winners
     const { firstWinner, firstTime, lastWinner, lastTime } = calculateWinners(plainParticipants, formData.startTime);
 
-    setFormData({ 
-      ...formData, 
+    setFormData({
+      ...formData,
       participants: plainParticipants,
       firstWinner,
       firstTime,
@@ -316,13 +322,13 @@ const Tournaments = () => {
     // Get a completely clean copy via JSON to remove any Mongoose proxies
     const plainParticipants = JSON.parse(JSON.stringify(formData.participants));
     const currentParticipant = plainParticipants[participantIndex];
-    
+
     const totalDays = formData.numDays || 1;
     const defaultStartTime = currentParticipant.startTime || formData.startTime || '06:00';
-    
+
     // Build a new plain array for dailyStartTimes
     const newDailyStartTimes = [];
-    
+
     // First, populate with existing values or defaults
     for (let i = 0; i < totalDays; i++) {
       if (i === activeDateIndex) {
@@ -331,7 +337,7 @@ const Tournaments = () => {
       } else {
         // Try to get existing value
         let existingValue = defaultStartTime;
-        
+
         if (currentParticipant.dailyStartTimes) {
           if (Array.isArray(currentParticipant.dailyStartTimes) && currentParticipant.dailyStartTimes[i]) {
             const item = currentParticipant.dailyStartTimes[i];
@@ -346,14 +352,14 @@ const Tournaments = () => {
             existingValue = String(currentParticipant.dailyStartTimes[i]);
           }
         }
-        
+
         newDailyStartTimes[i] = existingValue;
       }
     }
-    
+
     // Update the participant with the new clean array
     currentParticipant.dailyStartTimes = newDailyStartTimes;
-    
+
     const scoringPigeons = formData.noteTimePigeons || formData.numPigeons || 0;
     const helperPigeons = formData.helperPigeons || 0;
 
@@ -371,8 +377,8 @@ const Tournaments = () => {
     // Recalculate global winners
     const { firstWinner, firstTime, lastWinner, lastTime } = calculateWinners(plainParticipants, formData.startTime);
 
-    setFormData({ 
-      ...formData, 
+    setFormData({
+      ...formData,
       participants: plainParticipants,
       firstWinner,
       firstTime,
@@ -396,11 +402,11 @@ const Tournaments = () => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
       setPosterFiles(prev => [...prev, ...files]);
-      
+
       const previews = files.map(file => URL.createObjectURL(file));
-      setFormData(prev => ({ 
-        ...prev, 
-        posters: [...(prev.posters || []), ...previews] 
+      setFormData(prev => ({
+        ...prev,
+        posters: [...(prev.posters || []), ...previews]
       }));
     }
   };
@@ -417,7 +423,7 @@ const Tournaments = () => {
     }
 
     // Check for duplicates
-    const isDuplicate = (formData.participants || []).some(p => 
+    const isDuplicate = (formData.participants || []).some(p =>
       p.name.toLowerCase().replace(/\s+/g, '') === newParticipant.name.toLowerCase().replace(/\s+/g, '')
     );
 
@@ -436,7 +442,7 @@ const Tournaments = () => {
     const totalDays = (formData.numDays || 1);
     const initialTimes = Array(totalPigeons * totalDays).fill('');
     const initialDailyStartTimes = Array(totalDays).fill(formData.startTime || '06:00');
-    
+
     const participantWithTimes = {
       ...newParticipant,
       pigeonTimes: initialTimes,
@@ -460,14 +466,14 @@ const Tournaments = () => {
         // Clean participants before saving
         const cleanedFormData = {
           ...updatedFormData,
-          participants: updatedParticipants.map(p => 
+          participants: updatedParticipants.map(p =>
             cleanParticipantForSave(p, formData.numDays || 1, formData.startTime || '06:00')
           )
         };
-        
+
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${selectedTournament._id}`, {
           method: 'PUT',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
@@ -500,14 +506,14 @@ const Tournaments = () => {
         // Clean participants before saving
         const cleanedFormData = {
           ...updatedFormData,
-          participants: newParticipants.map(p => 
+          participants: newParticipants.map(p =>
             cleanParticipantForSave(p, formData.numDays || 1, formData.startTime || '06:00')
           )
         };
-        
+
         await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${selectedTournament._id}`, {
           method: 'PUT',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
@@ -537,10 +543,10 @@ const Tournaments = () => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      const url = editingLeague 
+      const url = editingLeague
         ? `${import.meta.env.VITE_API_BASE_URL}/leagues/${editingLeague._id}`
         : `${import.meta.env.VITE_API_BASE_URL}/leagues`;
-      
+
       const response = await fetch(url, {
         method: editingLeague ? 'PUT' : 'POST',
         headers: {
@@ -586,18 +592,18 @@ const Tournaments = () => {
 
   const handleEditLeague = (league) => {
     setEditingLeague(league);
-    setLeagueFormData({ 
-      name: league.name, 
+    setLeagueFormData({
+      name: league.name,
       description: league.description || '',
       admin: league.admin?._id || league.admin || ''
     });
     setShowLeagueModal(true);
   };
 
-  const handleEdit = (t) => {
+  const handleEdit = async (t) => {
     const isAssignedAdmin = (t.admin?._id || t.admin) === currentUser?.id;
     const isSuperAdmin = currentUser?.role === 'Super Admin';
-    
+
     // Check if user is the League Admin for this tournament
     const relatedLeague = leagues.find(l => l.name === t.leagueName);
     const isLeagueAdmin = (relatedLeague?.admin?._id || relatedLeague?.admin) === currentUser?.id;
@@ -612,18 +618,31 @@ const Tournaments = () => {
       return;
     }
 
-    setSelectedTournament(t);
+    // Fetch full tournament details (including participants) since we only have the summary
+    setLoading(true);
+    let fullTournament = t;
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${t._id}`);
+      if (response.ok) {
+        fullTournament = await response.json();
+      }
+    } catch (err) {
+      console.error("Error fetching full tournament info:", err);
+    }
+    setLoading(false);
+
+    setSelectedTournament(fullTournament);
     setPosterFiles([]); // Reset file state when switching tournaments
-    
+
     // Clean participants to ensure proper array structures using helper
-    const cleanParticipants = (t.participants || []).map(p => 
-      cleanParticipantForSave(p, t.numDays || 1, t.startTime || '06:00')
+    const cleanParticipants = (fullTournament.participants || []).map(p =>
+      cleanParticipantForSave(p, fullTournament.numDays || 1, fullTournament.startTime || '06:00')
     );
-    
+
     setFormData({
       ...initialFormState,
-      ...t,
-      admin: t.admin?._id || t.admin,
+      ...fullTournament,
+      admin: fullTournament.admin?._id || fullTournament.admin,
       startDate: t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       posters: t.posters || [],
       headline: t.headline || '',
@@ -639,7 +658,7 @@ const Tournaments = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const flyingDatesArr = t.flyingDates || [];
+    const flyingDatesArr = fullTournament.flyingDates || [];
     if (flyingDatesArr.length > 0) {
       for (let i = 0; i < flyingDatesArr.length; i++) {
         const d = new Date(flyingDatesArr[i]);
@@ -683,9 +702,9 @@ const Tournaments = () => {
     const flyingDates = [];
     const start = new Date(formData.startDate);
     for (let i = 0; i < formData.numDays; i++) {
-        const nextDate = new Date(start);
-        nextDate.setDate(start.getDate() + (i * 2));
-        flyingDates.push(nextDate);
+      const nextDate = new Date(start);
+      nextDate.setDate(start.getDate() + (i * 2));
+      flyingDates.push(nextDate);
     }
 
     const totalPigeonsPerDay = formData.numPigeons || 0;
@@ -694,18 +713,18 @@ const Tournaments = () => {
     const updatedParticipants = (formData.participants || []).map(p => {
       // Use the cleaning helper to ensure proper arrays
       const cleaned = cleanParticipantForSave(p, formData.numDays || 1, formData.startTime || '06:00');
-      
+
       // Calculate total time with the cleaned participant
       cleaned.totalTime = calculateGrandTotal(
-        cleaned.pigeonTimes, 
-        totalPigeonsPerDay, 
-        formData.startTime, 
-        formData.numDays || 1, 
-        scoringPigeons, 
+        cleaned.pigeonTimes,
+        totalPigeonsPerDay,
+        formData.startTime,
+        formData.numDays || 1,
+        scoringPigeons,
         helperPigeons,
         cleaned
       );
-      
+
       return cleaned;
     });
 
@@ -725,20 +744,20 @@ const Tournaments = () => {
     });
 
     const tournamentToSave = {
-        ...formData,
-        participants: updatedParticipants,
-        firstWinner,
-        firstTime,
-        lastWinner,
-        lastTime,
-        dailyWinners,
-        // Store `totalPigeons` as the number of scoring pigeons (numPigeons), helpers remain separate
-        totalPigeons: formData.numPigeons || 0,
-        flyingDates
+      ...formData,
+      participants: updatedParticipants,
+      firstWinner,
+      firstTime,
+      lastWinner,
+      lastTime,
+      dailyWinners,
+      // Store `totalPigeons` as the number of scoring pigeons (numPigeons), helpers remain separate
+      totalPigeons: formData.numPigeons || 0,
+      flyingDates
     };
 
     const method = selectedTournament ? 'PUT' : 'POST';
-    const url = selectedTournament 
+    const url = selectedTournament
       ? `${import.meta.env.VITE_API_BASE_URL}/tournaments/${selectedTournament._id}`
       : `${import.meta.env.VITE_API_BASE_URL}/tournaments`;
     const token = localStorage.getItem('adminToken');
@@ -746,11 +765,11 @@ const Tournaments = () => {
     try {
       // Use FormData for multipart upload (supporting images)
       const formDataToSend = new FormData();
-      
+
       // Filter out blob URLs from posters - these are local previews.
       // Send only existing server paths as strings.
       const existingPosters = (tournamentToSave.posters || []).filter(p => !p.startsWith('blob:'));
-      
+
       // Append all fields to FormData
       Object.keys(tournamentToSave).forEach(key => {
         if (key === 'posters') {
@@ -773,7 +792,7 @@ const Tournaments = () => {
       console.log('📤 Sending tournament data via FormData...');
       const response = await fetch(url, {
         method,
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`
         },
         body: formDataToSend,
@@ -782,14 +801,14 @@ const Tournaments = () => {
       if (response.ok) {
         const savedTournament = await response.json();
         setPosterFiles([]); // Clear uploaded files on success
-        
+
         // Clean the returned tournament data before putting in state
         if (savedTournament.participants) {
-          savedTournament.participants = savedTournament.participants.map(p => 
+          savedTournament.participants = savedTournament.participants.map(p =>
             cleanParticipantForSave(p, formData.numDays || 1, formData.startTime || '06:00')
           );
         }
-        
+
         // If we were creating, we might want to go to list, 
         // but user asked to remain on screen.
         // Update selectedTournament so subsequent saves work correctly
@@ -802,9 +821,9 @@ const Tournaments = () => {
           admin: savedTournament.admin?._id || savedTournament.admin,
           participants: savedTournament.participants
         }));
-        
+
         fetchTournaments();
-        
+
         // Success popup removed as per user request
       } else {
         // Handle non-JSON error responses (like 413 Payload Too Large HTML)
@@ -820,9 +839,9 @@ const Tournaments = () => {
 
         console.error("Server error:", errorMessage);
         setModalContent({
-            title: 'Error',
-            message: errorMessage,
-            onConfirm: null
+          title: 'Error',
+          message: errorMessage,
+          onConfirm: null
         });
         setModalOpen(true);
       }
@@ -872,7 +891,7 @@ const Tournaments = () => {
 
     if (view === 'time-entry') {
       const flyingDates = formData.flyingDates || [];
-  
+
       return (
         <div className="time-entry-view">
           <div className="view-header">
@@ -885,17 +904,17 @@ const Tournaments = () => {
                   <div className="start-time-global-edit">
                     <FaClock />
                     <span>Tournament Start Time:</span>
-                    <input 
-                      type="time" 
+                    <input
+                      type="time"
                       value={formData.startTime}
-                      onChange={(e) => setFormData({...formData, startTime: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
                     />
                   </div>
                 </div>
               </div>
             </div>
-            <button 
-              className={`save-btn ${activeDateIndex === null ? 'disabled' : ''}`} 
+            <button
+              className={`save-btn ${activeDateIndex === null ? 'disabled' : ''}`}
               onClick={activeDateIndex !== null ? handleSave : undefined}
               disabled={activeDateIndex === null}
             >
@@ -905,8 +924,8 @@ const Tournaments = () => {
 
           <div className="admin-date-selector">
             {flyingDates.map((date, idx) => (
-              <button 
-                key={idx} 
+              <button
+                key={idx}
                 className={`admin-date-btn ${activeDateIndex === idx ? 'active' : ''}`}
                 onClick={() => setActiveDateIndex(idx)}
               >
@@ -914,7 +933,7 @@ const Tournaments = () => {
                 {new Date(date).toISOString().split('T')[0]}
               </button>
             ))}
-            <button 
+            <button
               className={`admin-date-btn total-tab ${activeDateIndex === 'total' ? 'active' : ''}`}
               onClick={() => setActiveDateIndex('total')}
             >
@@ -957,7 +976,7 @@ const Tournaments = () => {
                       )}
                     </div>
                   )}
-        
+
                   <div className="table-responsive">
                     <table className="time-table">
                       <thead>
@@ -990,12 +1009,12 @@ const Tournaments = () => {
                                   <span className="p-name-table">{formatPlayerName(p.name)}</span>
                                 </div>
                               </td>
-                              
+
                               {activeDateIndex !== 'total' ? (
                                 <>
                                   <td className="start-time-cell">
-                                    <input 
-                                      type="time" 
+                                    <input
+                                      type="time"
                                       value={(p.dailyStartTimes && p.dailyStartTimes[activeDateIndex]) || p.startTime || formData.startTime}
                                       onChange={(e) => {
                                         handleParticipantStartTimeChange(pIndex, activeDateIndex, e.target.value);
@@ -1007,8 +1026,8 @@ const Tournaments = () => {
                                     const globalPigeonIdx = (activeDateIndex * totalPigeonsPerDay) + i;
                                     return (
                                       <td key={i} className="time-input-cell">
-                                        <input 
-                                          type="time" 
+                                        <input
+                                          type="time"
                                           value={p.pigeonTimes && p.pigeonTimes[globalPigeonIdx] ? p.pigeonTimes[globalPigeonIdx] : ''}
                                           onChange={(e) => {
                                             handleTimeChange(pIndex, globalPigeonIdx, e.target.value);
@@ -1019,8 +1038,8 @@ const Tournaments = () => {
                                   })}
                                   <td className="total-time-cell">
                                     {calculateTotalTime(
-                                      (p.dailyStartTimes && p.dailyStartTimes[activeDateIndex]) || p.startTime || formData.startTime, 
-                                      (p.pigeonTimes || []).slice(activeDateIndex * totalPigeonsPerDay, (activeDateIndex + 1) * totalPigeonsPerDay), 
+                                      (p.dailyStartTimes && p.dailyStartTimes[activeDateIndex]) || p.startTime || formData.startTime,
+                                      (p.pigeonTimes || []).slice(activeDateIndex * totalPigeonsPerDay, (activeDateIndex + 1) * totalPigeonsPerDay),
                                       scoringPigeons,
                                       helperPigeons
                                     )}
@@ -1029,19 +1048,19 @@ const Tournaments = () => {
                               ) : (
                                 <>
                                   {flyingDates.map((_, idx) => {
-                                     // For total view, we don't highlight individual boxes easily here 
-                                     // as it's a summary of daily totals
-                                     const dayStartTime = (p.dailyStartTimes && p.dailyStartTimes[idx]) || p.startTime || formData.startTime;
-                                     return (
+                                    // For total view, we don't highlight individual boxes easily here 
+                                    // as it's a summary of daily totals
+                                    const dayStartTime = (p.dailyStartTimes && p.dailyStartTimes[idx]) || p.startTime || formData.startTime;
+                                    return (
                                       <td key={idx} className="daily-total-cell">
                                         {calculateTotalTime(
-                                          dayStartTime, 
-                                          (p.pigeonTimes || []).slice(idx * totalPigeonsPerDay, (idx + 1) * totalPigeonsPerDay), 
+                                          dayStartTime,
+                                          (p.pigeonTimes || []).slice(idx * totalPigeonsPerDay, (idx + 1) * totalPigeonsPerDay),
                                           scoringPigeons,
                                           helperPigeons
-                                          )}
+                                        )}
                                       </td>
-                                     )
+                                    )
                                   })}
                                   <td className="grand-total-cell">
                                     {calculateGrandTotal(p.pigeonTimes, totalPigeonsPerDay, formData.startTime, formData.numDays || 1, scoringPigeons, helperPigeons, p)}
@@ -1067,7 +1086,7 @@ const Tournaments = () => {
         </div>
       );
     }
-  
+
     if (view === 'edit') {
       return (
         <div className="tournament-edit-view">
@@ -1078,9 +1097,9 @@ const Tournaments = () => {
             </div>
             <div className="header-actions-group">
               {selectedTournament && (
-                <button 
-                  type="button" 
-                  className="add-person-btn" 
+                <button
+                  type="button"
+                  className="add-person-btn"
                   onClick={() => {
                     setNewParticipant({ name: '', image: '', address: '', phone: '' });
                     setOwnerSearch('');
@@ -1100,24 +1119,24 @@ const Tournaments = () => {
               )}
             </div>
           </div>
-  
+
           <form className="tournament-form" onSubmit={handleSave}>
             <div className="form-grid">
               <div className="form-group">
                 <label>Tournament Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                 />
               </div>
 
               <div className="form-group">
                 <label>League Name (Grouping Name)</label>
-                <select 
+                <select
                   value={formData.leagueName}
-                  onChange={(e) => setFormData({...formData, leagueName: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, leagueName: e.target.value })}
                   required
                 >
                   <option value="Independent">Independent (No League)</option>
@@ -1127,97 +1146,97 @@ const Tournaments = () => {
                 </select>
                 <small>Select "Independent" if this doesn't belong to a specific league.</small>
               </div>
-  
-                {currentUser?.role === 'Super Admin' && (
-                  <div className="form-group">
-                    <label>Assign to Admin</label>
-                    <select 
-                      value={formData.admin}
-                      onChange={(e) => setFormData({...formData, admin: e.target.value})}
-                      required
-                    >
-                      <option value="">Select an Admin</option>
-                      {(admins || []).map(admin => (
-                        <option key={admin._id} value={admin._id}>{admin.name} ({admin.role})</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-  
+
+              {currentUser?.role === 'Super Admin' && (
+                <div className="form-group">
+                  <label>Assign to Admin</label>
+                  <select
+                    value={formData.admin}
+                    onChange={(e) => setFormData({ ...formData, admin: e.target.value })}
+                    required
+                  >
+                    <option value="">Select an Admin</option>
+                    {(admins || []).map(admin => (
+                      <option key={admin._id} value={admin._id}>{admin.name} ({admin.role})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="form-group">
                 <label>Start Date</label>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   value={formData.startDate}
-                  onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                 />
               </div>
-  
+
               <div className="form-group">
                 <label>Start Time</label>
-                <input 
-                  type="time" 
+                <input
+                  type="time"
                   value={formData.startTime}
-                  onChange={(e) => setFormData({...formData, startTime: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
                 />
               </div>
-  
+
               <div className="form-group">
                 <label>Number of Days (1-12)</label>
-                <select 
+                <select
                   value={formData.numDays || 1}
-                  onChange={(e) => setFormData({...formData, numDays: parseInt(e.target.value) || 1})}
+                  onChange={(e) => setFormData({ ...formData, numDays: parseInt(e.target.value) || 1 })}
                 >
                   {[...Array(12)].map((_, i) => (
-                    <option key={i+1} value={i+1}>{i+1} Day{i > 0 ? 's' : ''}</option>
+                    <option key={i + 1} value={i + 1}>{i + 1} Day{i > 0 ? 's' : ''}</option>
                   ))}
                 </select>
               </div>
-  
+
               <div className="form-group">
                 <label>Number of Pigeons</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   value={formData.numPigeons || 0}
-                  onChange={(e) => setFormData({...formData, numPigeons: parseInt(e.target.value) || 0})}
+                  onChange={(e) => setFormData({ ...formData, numPigeons: parseInt(e.target.value) || 0 })}
                 />
               </div>
-  
+
               <div className="form-group">
                 <label>Note time for Pigeons</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   value={formData.noteTimePigeons || 0}
-                  onChange={(e) => setFormData({...formData, noteTimePigeons: parseInt(e.target.value) || 0})}
+                  onChange={(e) => setFormData({ ...formData, noteTimePigeons: parseInt(e.target.value) || 0 })}
                 />
                 <small>Must be ≤ Flying Pigeons</small>
               </div>
-  
+
               <div className="form-group">
                 <label>Helper Pigeons</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   value={formData.helperPigeons || 0}
-                  onChange={(e) => setFormData({...formData, helperPigeons: parseInt(e.target.value) || 0})}
+                  onChange={(e) => setFormData({ ...formData, helperPigeons: parseInt(e.target.value) || 0 })}
                 />
               </div>
-  
+
               <div className="form-group">
                 <label>Total Pigeons (Auto)</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   value={formData.numPigeons || 0}
                   readOnly
                   className="readonly-input"
                 />
                 <small>Number of scoring pigeons (helpers excluded)</small>
               </div>
-  
+
               <div className="form-group">
                 <label>Status</label>
-                <select 
+                <select
                   value={formData.status}
-                  onChange={(e) => setFormData({...formData, status: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                 >
                   <option value="Active">Active</option>
                   <option value="Paused">Paused</option>
@@ -1225,13 +1244,13 @@ const Tournaments = () => {
                   <option value="Completed">Completed</option>
                 </select>
               </div>
-  
+
               <div className="form-group checkbox-group">
                 <label>
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={formData.showOnHome}
-                    onChange={(e) => setFormData({...formData, showOnHome: e.target.checked})}
+                    onChange={(e) => setFormData({ ...formData, showOnHome: e.target.checked })}
                   />
                   Show on Home Screen
                 </label>
@@ -1239,27 +1258,27 @@ const Tournaments = () => {
 
               <div className="form-group full-width">
                 <label>Announcement Headline (Moving Text)</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={formData.headline || ''}
-                  onChange={(e) => setFormData({...formData, headline: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, headline: e.target.value })}
                   placeholder="e.g. کوٹلہ پیجن کی جانب سے تمام کھلاڑیوں کو بیسٹ وشز"
                 />
               </div>
-  
+
               <div className="form-group full-width">
                 <label>Tournament Posters (Upload from Gallery)</label>
                 <div className="image-input-container">
-                  <input 
-                    type="file" 
+                  <input
+                    type="file"
                     id="poster-upload"
                     multiple
                     accept="image/*"
                     onChange={handlePostersUpload}
                     style={{ display: 'none' }}
                   />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="upload-btn"
                     onClick={() => document.getElementById('poster-upload').click()}
                   >
@@ -1272,33 +1291,33 @@ const Tournaments = () => {
                     <div key={index} className="poster-tag">
                       <img src={url} alt={`poster-${index}`} />
                       <button type="button" className="remove-poster" onClick={() => {
-                         const indexToRemove = index;
-                         const urlToRemove = formData.posters[indexToRemove];
-                         
-                         setFormData(prev => {
-                           const newPosters = [...prev.posters];
-                           newPosters.splice(indexToRemove, 1);
-                           return { ...prev, posters: newPosters };
-                         });
+                        const indexToRemove = index;
+                        const urlToRemove = formData.posters[indexToRemove];
 
-                         if (urlToRemove.startsWith('blob:') || urlToRemove.startsWith('data:')) {
-                           // Figure out which file it was. 
-                           const blobUrlsBefore = formData.posters.slice(0, indexToRemove).filter(u => u.startsWith('blob:') || u.startsWith('data:')).length;
-                           setPosterFiles(prev => {
-                             const newFiles = [...prev];
-                             if (newFiles.length > blobUrlsBefore) {
-                               newFiles.splice(blobUrlsBefore, 1);
-                             }
-                             return newFiles;
-                           });
-                         }
+                        setFormData(prev => {
+                          const newPosters = [...prev.posters];
+                          newPosters.splice(indexToRemove, 1);
+                          return { ...prev, posters: newPosters };
+                        });
+
+                        if (urlToRemove.startsWith('blob:') || urlToRemove.startsWith('data:')) {
+                          // Figure out which file it was. 
+                          const blobUrlsBefore = formData.posters.slice(0, indexToRemove).filter(u => u.startsWith('blob:') || u.startsWith('data:')).length;
+                          setPosterFiles(prev => {
+                            const newFiles = [...prev];
+                            if (newFiles.length > blobUrlsBefore) {
+                              newFiles.splice(blobUrlsBefore, 1);
+                            }
+                            return newFiles;
+                          });
+                        }
                       }}>×</button>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-  
+
             <div className="form-actions">
               {selectedTournament && currentUser?.role === 'Super Admin' && (
                 <button type="button" className="delete-btn" onClick={handleDelete}>
@@ -1308,11 +1327,11 @@ const Tournaments = () => {
               <button type="submit" className="save-btn">
                 <FaSave /> {selectedTournament ? 'Update Tournament' : 'Create Tournament'}
               </button>
-              
+
               {selectedTournament && (
-                <button 
-                  type="button" 
-                  className="add-person-btn" 
+                <button
+                  type="button"
+                  className="add-person-btn"
                   onClick={() => {
                     setNewParticipant({ name: '', image: '', address: '', phone: '' });
                     setOwnerSearch('');
@@ -1323,13 +1342,13 @@ const Tournaments = () => {
                 </button>
               )}
             </div>
-  
+
             {selectedTournament && (
               <div className="participants-section">
                 <div className="participants-header">
                   <h3><FaUserFriends /> Enrolled Participants ({(formData.participants || []).length})</h3>
                 </div>
-  
+
                 {participantModalOpen && (
                   <div className="modal-overlay">
                     <div className="participant-modal">
@@ -1341,8 +1360,8 @@ const Tournaments = () => {
                         <div className="form-group">
                           <label>Participant Photo (Gallery)</label>
                           <div className="file-input-wrapper">
-                            <input 
-                              type="file" 
+                            <input
+                              type="file"
                               accept="image/*"
                               onChange={handleImageChange}
                               id="participant-photo"
@@ -1359,12 +1378,12 @@ const Tournaments = () => {
                         </div>
                         <div className="form-group" style={{ position: 'relative' }}>
                           <label>Full Name * (Search Global Owners)</label>
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             value={ownerSearch}
                             onChange={(e) => {
                               setOwnerSearch(e.target.value);
-                              setNewParticipant({...newParticipant, name: e.target.value});
+                              setNewParticipant({ ...newParticipant, name: e.target.value });
                             }}
                             placeholder="Type to search global owners..."
                           />
@@ -1384,19 +1403,19 @@ const Tournaments = () => {
                         </div>
                         <div className="form-group">
                           <label>Phone Number (Optional)</label>
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             value={newParticipant.phone}
-                            onChange={(e) => setNewParticipant({...newParticipant, phone: e.target.value})}
+                            onChange={(e) => setNewParticipant({ ...newParticipant, phone: e.target.value })}
                             placeholder="Contact number"
                           />
                         </div>
                         <div className="form-group">
                           <label>Address (Optional)</label>
-                          <input 
-                            type="text" 
+                          <input
+                            type="text"
                             value={newParticipant.address}
-                            onChange={(e) => setNewParticipant({...newParticipant, address: e.target.value})}
+                            onChange={(e) => setNewParticipant({ ...newParticipant, address: e.target.value })}
                             placeholder="Full address"
                           />
                         </div>
@@ -1408,7 +1427,7 @@ const Tournaments = () => {
                     </div>
                   </div>
                 )}
-  
+
                 <div className="participants-grid">
                   {(formData.participants || []).map((p, index) => (
                     <div key={index} className="participant-card-mini">
@@ -1427,7 +1446,7 @@ const Tournaments = () => {
         </div>
       );
     }
-  
+
     if (view === 'manage-leagues') {
       return (
         <div className="tournaments-section">
@@ -1467,7 +1486,7 @@ const Tournaments = () => {
                           <strong>{leagueTournaments.length}</strong> Tournaments
                         </div>
                       </div>
-                      
+
                       <div className="league-tournaments-preview">
                         <h4>Assigned Tournaments:</h4>
                         {leagueTournaments.length > 0 ? (
@@ -1525,7 +1544,7 @@ const Tournaments = () => {
             </div>
           )}
         </div>
-  
+
         <div className="tournaments-list">
           {!tournaments || tournaments.length === 0 ? (
             <p className="no-data">No tournaments found. Click "New Tournament" to add one.</p>
@@ -1534,13 +1553,13 @@ const Tournaments = () => {
               {(tournaments || []).map((t) => {
                 const isUserAdmin = (t.admin?._id || t.admin) === currentUser?.id;
                 return (
-                  <div 
-                    key={t._id} 
-                    className={`tournament-card ${isUserAdmin ? 'my-tournament' : ''}`} 
+                  <div
+                    key={t._id}
+                    className={`tournament-card ${isUserAdmin ? 'my-tournament' : ''}`}
                     onClick={() => handleEdit(t)}
                   >
-                    <button 
-                      className="copy-link-btn" 
+                    <button
+                      className="copy-link-btn"
                       onClick={(e) => handleCopyLink(t._id, e)}
                       title="Copy Tournament Link"
                     >
@@ -1564,7 +1583,7 @@ const Tournaments = () => {
                         </div>
                         <div className="detail-item">
                           <FaCalendarAlt className="detail-icon" />
-                        <span>{t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : 'No date'} {t.startTime || ''}</span>
+                          <span>{t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : 'No date'} {t.startTime || ''}</span>
                         </div>
                         <div className="detail-item">
                           <FaDove className="detail-icon" />
@@ -1578,7 +1597,7 @@ const Tournaments = () => {
                           <span>{t.numDays} Days</span>
                         </div>
                       </div>
-                      
+
                       {(t.firstWinner || t.lastWinner) && (
                         <div className="card-winners-mini">
                           {t.firstWinner && (
@@ -1613,11 +1632,11 @@ const Tournaments = () => {
   return (
     <>
       {renderView()}
-      
-      <Modal 
-        isOpen={modalOpen} 
-        onClose={() => setModalOpen(false)} 
-        title={modalContent.title} 
+
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalContent.title}
         message={modalContent.message}
         onConfirm={modalContent.onConfirm}
         confirmText={modalContent.confirmText}
@@ -1638,9 +1657,9 @@ const Tournaments = () => {
               {currentUser?.role === 'Super Admin' && (
                 <div className="form-group">
                   <label>Assign League Admin</label>
-                  <select 
+                  <select
                     value={leagueFormData.admin}
-                    onChange={(e) => setLeagueFormData({...leagueFormData, admin: e.target.value})}
+                    onChange={(e) => setLeagueFormData({ ...leagueFormData, admin: e.target.value })}
                   >
                     <option value="">No Admin assigned (Super Admin only)</option>
                     {admins.map(admin => (
@@ -1653,19 +1672,19 @@ const Tournaments = () => {
               )}
               <div className="form-group">
                 <label>League Name</label>
-                <input 
-                  type="text" 
-                  value={leagueFormData.name} 
-                  onChange={(e) => setLeagueFormData({...leagueFormData, name: e.target.value})}
-                  required 
+                <input
+                  type="text"
+                  value={leagueFormData.name}
+                  onChange={(e) => setLeagueFormData({ ...leagueFormData, name: e.target.value })}
+                  required
                   placeholder="e.g. Asia Cup, World League"
                 />
               </div>
               <div className="form-group">
                 <label>Description (Optional)</label>
-                <textarea 
-                  value={leagueFormData.description} 
-                  onChange={(e) => setLeagueFormData({...leagueFormData, description: e.target.value})}
+                <textarea
+                  value={leagueFormData.description}
+                  onChange={(e) => setLeagueFormData({ ...leagueFormData, description: e.target.value })}
                   placeholder="Enter league details..."
                 />
               </div>

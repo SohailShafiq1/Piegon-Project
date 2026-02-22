@@ -10,6 +10,8 @@ const News = () => {
 
     const fetchNews = async () => {
         try {
+            const token = localStorage.getItem('adminToken');
+            if (!token) return;
             const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/news`);
             const data = await response.json();
             setNews(data);
@@ -27,12 +29,12 @@ const News = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = editingNews 
+        const url = editingNews
             ? `${import.meta.env.VITE_API_BASE_URL}/news/${editingNews._id}`
             : `${import.meta.env.VITE_API_BASE_URL}/news`;
-        
+
         const method = editingNews ? 'PUT' : 'POST';
-        
+
         try {
             const response = await fetch(url, {
                 method,
@@ -56,7 +58,7 @@ const News = () => {
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this news item?')) return;
-        
+
         try {
             await fetch(`${import.meta.env.VITE_API_BASE_URL}/news/${id}`, {
                 method: 'DELETE',
@@ -145,30 +147,30 @@ const News = () => {
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
                                 <label>Title</label>
-                                <input 
-                                    type="text" 
-                                    required 
+                                <input
+                                    type="text"
+                                    required
                                     value={formData.title}
-                                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     placeholder="News Title"
                                 />
                             </div>
                             <div className="form-group">
                                 <label>Content</label>
-                                <textarea 
-                                    required 
+                                <textarea
+                                    required
                                     rows="5"
                                     value={formData.content}
-                                    onChange={(e) => setFormData({...formData, content: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                                     placeholder="Write news content here..."
                                     style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
                                 />
                             </div>
                             <div className="form-group">
                                 <label>Status</label>
-                                <select 
+                                <select
                                     value={formData.status}
-                                    onChange={(e) => setFormData({...formData, status: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                 >
                                     <option value="Published">Published</option>
                                     <option value="Draft">Draft</option>
