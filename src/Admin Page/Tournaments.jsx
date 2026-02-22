@@ -124,6 +124,7 @@ const Tournaments = () => {
   };
 
   const [formData, setFormData] = useState(initialFormState);
+  const [posterFiles, setPosterFiles] = useState([]); // Real file objects for upload
   const [newParticipant, setNewParticipant] = useState({ name: '', image: '', address: '', phone: '' });
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
   const [activeDateIndex, setActiveDateIndex] = useState(null); // Changed to null: Force date selection
@@ -394,17 +395,13 @@ const Tournaments = () => {
   const handlePostersUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      const readers = files.map(file => {
-        return new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(file);
-        });
-      });
-
-      Promise.all(readers).then(results => {
-        setFormData(prev => ({ ...prev, posters: [...(prev.posters || []), ...results] }));
-      });
+      setPosterFiles(prev => [...prev, ...files]);
+      
+      const previews = files.map(file => URL.createObjectURL(file));
+      setFormData(prev => ({ 
+        ...prev, 
+        posters: [...(prev.posters || []), ...previews] 
+      }));
     }
   };
 
@@ -616,6 +613,7 @@ const Tournaments = () => {
     }
 
     setSelectedTournament(t);
+    setPosterFiles([]); // Reset file state when switching tournaments
     
     // Clean participants to ensure proper array structures using helper
     const cleanParticipants = (t.participants || []).map(p => 
@@ -746,17 +744,44 @@ const Tournaments = () => {
     const token = localStorage.getItem('adminToken');
 
     try {
+      // Use FormData for multipart upload (supporting images)
+      const formDataToSend = new FormData();
+      
+      // Filter out blob URLs from posters - these are local previews.
+      // Send only existing server paths as strings.
+      const existingPosters = (tournamentToSave.posters || []).filter(p => !p.startsWith('blob:'));
+      
+      // Append all fields to FormData
+      Object.keys(tournamentToSave).forEach(key => {
+        if (key === 'posters') {
+          // Send existing poster paths as a JSON string for the backend to parse
+          formDataToSend.append('posters', JSON.stringify(existingPosters));
+        } else if (Array.isArray(tournamentToSave[key]) || typeof tournamentToSave[key] === 'object') {
+          formDataToSend.append(key, JSON.stringify(tournamentToSave[key]));
+        } else {
+          formDataToSend.append(key, tournamentToSave[key]);
+        }
+      });
+
+      // Append new poster files
+      if (posterFiles && posterFiles.length > 0) {
+        posterFiles.forEach(file => {
+          formDataToSend.append('posters', file);
+        });
+      }
+
+      console.log('📤 Sending tournament data via FormData...');
       const response = await fetch(url, {
         method,
         headers: { 
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(tournamentToSave),
+        body: formDataToSend,
       });
 
       if (response.ok) {
         const savedTournament = await response.json();
+        setPosterFiles([]); // Clear uploaded files on success
         
         // Clean the returned tournament data before putting in state
         if (savedTournament.participants) {
@@ -1247,9 +1272,26 @@ const Tournaments = () => {
                     <div key={index} className="poster-tag">
                       <img src={url} alt={`poster-${index}`} />
                       <button type="button" className="remove-poster" onClick={() => {
-                         const newPosters = [...(formData.posters || [])];
-                         newPosters.splice(index, 1);
-                         setFormData({...formData, posters: newPosters});
+                         const indexToRemove = index;
+                         const urlToRemove = formData.posters[indexToRemove];
+                         
+                         setFormData(prev => {
+                           const newPosters = [...prev.posters];
+                           newPosters.splice(indexToRemove, 1);
+                           return { ...prev, posters: newPosters };
+                         });
+
+                         if (urlToRemove.startsWith('blob:') || urlToRemove.startsWith('data:')) {
+                           // Figure out which file it was. 
+                           const blobUrlsBefore = formData.posters.slice(0, indexToRemove).filter(u => u.startsWith('blob:') || u.startsWith('data:')).length;
+                           setPosterFiles(prev => {
+                             const newFiles = [...prev];
+                             if (newFiles.length > blobUrlsBefore) {
+                               newFiles.splice(blobUrlsBefore, 1);
+                             }
+                             return newFiles;
+                           });
+                         }
                       }}>×</button>
                     </div>
                   ))}

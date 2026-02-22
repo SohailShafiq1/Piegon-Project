@@ -10,9 +10,10 @@ const ManageOwners = () => {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('list'); // 'list', 'add', 'edit'
   const [selectedOwner, setSelectedOwner] = useState(null);
-  
+
   const initialFormState = { name: '', image: '', address: '', phone: '' };
   const [formData, setFormData] = useState(initialFormState);
+  const [imageFile, setImageFile] = useState(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', message: '', onConfirm: null, confirmText: 'OK' });
@@ -44,7 +45,7 @@ const ManageOwners = () => {
       // Find and update tournaments that have this owner as a participant
       for (const tournament of tournaments) {
         if (!tournament.participants) continue;
-        
+
         let updated = false;
         const updatedParticipants = tournament.participants.map(p => {
           if (p.ownerId === ownerId || p.ownerId?._id === ownerId) {
@@ -87,6 +88,7 @@ const ManageOwners = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData({ ...formData, image: reader.result });
@@ -117,28 +119,37 @@ const ManageOwners = () => {
 
     const token = localStorage.getItem('adminToken');
     const method = selectedOwner ? 'PUT' : 'POST';
-    const url = selectedOwner 
+    const url = selectedOwner
       ? `${import.meta.env.VITE_API_BASE_URL}/owners/${selectedOwner._id}`
       : `${import.meta.env.VITE_API_BASE_URL}/owners`;
+
+    const submitData = new FormData();
+    submitData.append('name', formData.name);
+    if (formData.phone) submitData.append('phone', formData.phone);
+    if (formData.address) submitData.append('address', formData.address);
+    if (imageFile) {
+      submitData.append('image', imageFile);
+    }
 
     try {
       const response = await fetch(url, {
         method,
-        headers: { 
-          'Content-Type': 'application/json',
+        headers: {
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: submitData
       });
 
       if (response.ok) {
+        const savedOwner = await response.json();
         // If editing, update participant names in all tournaments
         if (selectedOwner) {
-          await updateTournamentParticipants(selectedOwner._id, formData.name, formData.image, formData.phone, formData.address);
+          await updateTournamentParticipants(selectedOwner._id, savedOwner.name, savedOwner.image, savedOwner.phone, savedOwner.address);
         }
         fetchOwners();
         setView('list');
         setFormData(initialFormState);
+        setImageFile(null);
         setSelectedOwner(null);
         setModalContent({ title: 'Success', message: 'Owner saved successfully!', onConfirm: null });
         setModalOpen(true);
@@ -177,7 +188,7 @@ const ManageOwners = () => {
     }
   };
 
-  const filteredOwners = owners.filter(owner => 
+  const filteredOwners = owners.filter(owner =>
     owner.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -191,7 +202,7 @@ const ManageOwners = () => {
           <p>Manage global pigeon owners for all tournaments</p>
         </div>
         {view === 'list' && (
-          <button className="create-btn" onClick={() => { setView('add'); setFormData(initialFormState); setSelectedOwner(null); }}>
+          <button className="create-btn" onClick={() => { setView('add'); setFormData(initialFormState); setImageFile(null); setSelectedOwner(null); }}>
             <FaPlus /> Add New Owner
           </button>
         )}
@@ -201,9 +212,9 @@ const ManageOwners = () => {
         <div className="tournament-list-container">
           <div className="search-bar">
             <FaSearch className="search-icon" />
-            <input 
-              type="text" 
-              placeholder="Search by owner name..." 
+            <input
+              type="text"
+              placeholder="Search by owner name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -242,6 +253,7 @@ const ManageOwners = () => {
                         <button className="action-btn edit" onClick={() => {
                           setSelectedOwner(owner);
                           setFormData(owner);
+                          setImageFile(null);
                           setView('edit');
                         }}>
                           <FaEdit />
@@ -267,8 +279,8 @@ const ManageOwners = () => {
             <div className="form-grid">
               <div className="form-group">
                 <label>Owner Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
@@ -276,16 +288,16 @@ const ManageOwners = () => {
               </div>
               <div className="form-group">
                 <label>Phone Number</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
               </div>
               <div className="form-group full-width">
                 <label>Address</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 />
@@ -301,10 +313,10 @@ const ManageOwners = () => {
                       <span>Click to upload profile image</span>
                     </div>
                   )}
-                  <input 
-                    type="file" 
-                    id="owner-img" 
-                    hidden 
+                  <input
+                    type="file"
+                    id="owner-img"
+                    hidden
                     accept="image/*"
                     onChange={handleImageChange}
                   />
@@ -320,8 +332,8 @@ const ManageOwners = () => {
         </div>
       )}
 
-      <Modal 
-        isOpen={modalOpen} 
+      <Modal
+        isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         title={modalContent.title}
         message={modalContent.message}

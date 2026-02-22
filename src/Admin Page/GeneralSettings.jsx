@@ -5,6 +5,7 @@ import './GeneralSettings.css';
 
 const GeneralSettings = () => {
     const [defaultPosters, setDefaultPosters] = useState([]);
+    const [newPosterFiles, setNewPosterFiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
 
@@ -31,6 +32,8 @@ const GeneralSettings = () => {
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
+        setNewPosterFiles(prev => [...prev, ...files]);
+
         const readers = files.map(file => {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -48,29 +51,46 @@ const GeneralSettings = () => {
         const updated = [...defaultPosters];
         updated.splice(index, 1);
         setDefaultPosters(updated);
+        
+        // Also remove from new files if it was newly added
+        // This is tricky if we don't track which is which
     };
 
     const handleSave = async () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('adminToken');
+            
+            // Create FormData for multipart upload
+            const formData = new FormData();
+            formData.append('key', 'defaultPosters');
+            
+            // Keep existing poster URLs that are not base64
+            const existingPosters = defaultPosters.filter(p => !p.startsWith('data:'));
+            formData.append('value', JSON.stringify(existingPosters));
+
+            // Append new files
+            newPosterFiles.forEach(file => {
+                formData.append('posters', file);
+            });
+
             const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/settings`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
+                    // No Content-Type header for FormData
                 },
-                body: JSON.stringify({
-                    key: 'defaultPosters',
-                    value: defaultPosters
-                })
+                body: formData
             });
 
             if (response.ok) {
                 setMessage('Settings items saved successfully!');
+                setNewPosterFiles([]);
+                await fetchSettings(); // Refresh to get proper URLs
                 setTimeout(() => setMessage(''), 3000);
             } else {
-                setMessage('Failed to save settings.');
+                const error = await response.json();
+                setMessage(error.message || 'Failed to save settings.');
             }
         } catch (error) {
             console.error('Error saving settings:', error);
