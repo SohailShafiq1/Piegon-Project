@@ -82,7 +82,6 @@ function Home() {
     fetchData();
   }, []);
 
-  if (loading) return <div className="loading-screen">Loading...</div>;
   if (!activeTournament) return (
     <>
       <Banner posters={[]} />
@@ -187,7 +186,6 @@ function TournamentView() {
     fetchData();
   }, [id]);
 
-  if (loading) return <div className="loading-screen">Loading Tournament Data...</div>;
   if (!tournament) return <div>Tournament not found</div>;
 
   const flyingDates = tournament.flyingDates || [];
@@ -248,8 +246,6 @@ const DashboardHome = () => {
     };
     fetchStats();
   }, []);
-
-  if (loading) return <div className="loading-stats">Loading dashboard data...</div>;
 
   return (
     <>

@@ -79,8 +79,6 @@ const GeneralSettings = () => {
         setLoading(false);
     };
 
-    if (loading) return <div className="loading-screen">Loading Settings...</div>;
-
     return (
         <div className="tournaments-page">
             <div className="settings-page-header">

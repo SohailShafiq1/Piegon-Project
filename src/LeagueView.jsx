@@ -36,8 +36,6 @@ const LeagueView = () => {
     fetchLeagueTournaments();
   }, [leagueName]);
 
-  if (loading) return <div className="loading-screen">Loading League Data...</div>;
-
   return (
     <>
       <Banner posters={tournaments[0]?.posters || []} />

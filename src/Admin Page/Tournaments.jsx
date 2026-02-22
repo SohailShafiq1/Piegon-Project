@@ -840,8 +840,6 @@ const Tournaments = () => {
     }
   };
 
-  if (loading) return <div>Loading Tournaments...</div>;
-
   const renderView = () => {
     const totalPigeonsPerDay = formData.numPigeons || 0;
     const scoringPigeons = formData.noteTimePigeons || totalPigeonsPerDay;

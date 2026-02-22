@@ -32,8 +32,6 @@ const Categories = () => {
     init();
   }, []);
 
-  if (loading) return <div className="loading-screen">Loading Tournament Analysis...</div>;
-
   return (
     <div className="tournaments-page">
       <div className="page-header">
