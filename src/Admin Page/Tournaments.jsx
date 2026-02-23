@@ -1608,18 +1608,21 @@ const Tournaments = () => {
           )}
         </div>
 
-        <div className="tournaments-list">
+            <div className="tournaments-list">
           {!tournaments || tournaments.length === 0 ? (
             <p className="no-data">No tournaments found. Click "New Tournament" to add one.</p>
           ) : (
             <div className="tournament-grid">
               {(tournaments || []).map((t) => {
                 const isUserAdmin = (t.admin?._id || t.admin) === currentUser?.id;
+                const leagueForTournament = leagues.find(l => l.name === t.leagueName);
+                const isLeagueAdmin = (leagueForTournament?.admin?._id || leagueForTournament?.admin) === currentUser?.id;
+                const canEdit = isUserAdmin || isLeagueAdmin || currentUser?.role === 'Super Admin';
                 return (
                   <div
                     key={t._id}
-                    className={`tournament-card ${isUserAdmin ? 'my-tournament' : ''}`}
-                    onClick={() => handleEdit(t)}
+                    className={`tournament-card ${isUserAdmin ? 'my-tournament' : ''} ${!canEdit ? 'view-only-card' : ''}`}
+                    onClick={canEdit ? () => handleEdit(t) : undefined}
                   >
                     <button
                       className="copy-link-btn"
@@ -1678,7 +1681,7 @@ const Tournaments = () => {
                     </div>
                     <div className="card-footer">
                       <button className="edit-link">
-                        {isUserAdmin || currentUser?.role === 'Super Admin' ? 'Edit Details' : 'View Only'}
+                        {canEdit ? 'Edit Details' : 'View Only'}
                       </button>
                       {isUserAdmin && <span className="admin-badge">My Tournament</span>}
                     </div>

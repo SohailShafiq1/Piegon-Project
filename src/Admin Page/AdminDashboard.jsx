@@ -32,11 +32,33 @@ const AdminDashboard = () => {
 
   // Filter menu items based on user role
   const menuItems = allMenuItems.filter(item => {
+    // Only Super Admin can see Admin Users
     if (item.path === '/admin/users') {
       return user?.role === 'Super Admin';
     }
+
+    // Normal Admin should only see Dashboard and Tournament
+    if (user?.role !== 'Super Admin') {
+      return item.path === '/admin' || item.path === '/admin/tournaments';
+    }
+
+    // Super Admin sees everything
     return true;
   });
+
+  // Hard-route protection: prevent normal Admins from opening restricted pages via URL
+  useEffect(() => {
+    if (!user) return;
+    if (user.role !== 'Super Admin') {
+      const allowedPaths = ['/admin', '/admin/tournaments'];
+      const currentPath = location.pathname;
+      const isAllowed = allowedPaths.some(p => currentPath === p || currentPath.startsWith(`${p}/`));
+
+      if (!isAllowed) {
+        navigate('/admin/tournaments', { replace: true });
+      }
+    }
+  }, [user, location.pathname, navigate]);
 
   const handleMenuClick = (path) => {
     navigate(path);
