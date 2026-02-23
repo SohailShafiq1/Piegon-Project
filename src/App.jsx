@@ -27,12 +27,15 @@ function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    let isMounted = true;
+
+    const fetchData = async (isInitial = false) => {
       try {
         // Fetch News for broadcast
         try {
           const newsRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/news`);
           const newsData = await newsRes.json();
+          if (!isMounted) return;
           setNewsList(newsData.filter(n => n.status === 'Published'));
         } catch (e) {
           console.error("News fetch error:", e);
@@ -41,6 +44,7 @@ function Home() {
         // 1. Fetch lightweight tournament summaries
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments?summary=true`);
         const data = await response.json();
+        if (!isMounted) return;
 
         if (data.length > 0) {
           // Find the most recent active tournament summary
@@ -49,44 +53,63 @@ function Home() {
           // 2. Fetch ONLY the active tournament's full details (with participants)
           const activeRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${activeSummary._id}`);
           const activeFull = await activeRes.json();
+          if (!isMounted) return;
           setActiveTournament(activeFull);
 
-          // Smart date selection: show current day if flying date, total on break days during tournament
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
+          // Only recalculate the active date index on the initial load
+          if (isInitial) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-          const flyingDatesArr = activeFull.flyingDates || [];
-          let bestIdx = 'total';
+            const flyingDatesArr = activeFull.flyingDates || [];
+            let bestIdx = 'total';
 
-          if (flyingDatesArr.length > 0) {
-            const firstDate = new Date(flyingDatesArr[0]);
-            firstDate.setHours(0, 0, 0, 0);
+            if (flyingDatesArr.length > 0) {
+              const firstDate = new Date(flyingDatesArr[0]);
+              firstDate.setHours(0, 0, 0, 0);
 
-            const lastDate = new Date(flyingDatesArr[flyingDatesArr.length - 1]);
-            lastDate.setHours(0, 0, 0, 0);
+              const lastDate = new Date(flyingDatesArr[flyingDatesArr.length - 1]);
+              lastDate.setHours(0, 0, 0, 0);
 
-            // Check if today is a flying date
-            for (let i = 0; i < flyingDatesArr.length; i++) {
-              const d = new Date(flyingDatesArr[i]);
-              d.setHours(0, 0, 0, 0);
-              if (today.getTime() === d.getTime()) {
-                bestIdx = i;
-                break;
+              // Check if today is a flying date
+              for (let i = 0; i < flyingDatesArr.length; i++) {
+                const d = new Date(flyingDatesArr[i]);
+                d.setHours(0, 0, 0, 0);
+                if (today.getTime() === d.getTime()) {
+                  bestIdx = i;
+                  break;
+                }
               }
+              // If not on a flying date but between first and last, show total (break day)
+              // Otherwise if before first or after last, also show total
+              // bestIdx already defaults to 'total'
             }
-            // If not on a flying date but between first and last, show total (break day)
-            // Otherwise if before first or after last, also show total
-            // bestIdx already defaults to 'total'
+            setActiveDateIndex(bestIdx);
           }
-          setActiveDateIndex(bestIdx);
         }
-        setLoading(false);
+        if (isInitial) {
+          setLoading(false);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
-        setLoading(false);
+        if (isInitial) {
+          setLoading(false);
+        }
       }
     };
-    fetchData();
+
+    // Initial fetch
+    fetchData(true);
+
+    // Poll every 10 seconds for live updates
+    const intervalId = setInterval(() => {
+      fetchData(false);
+    }, 5000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
   }, []);
 
   if (!activeTournament) return (
@@ -140,12 +163,15 @@ function TournamentView() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    let isMounted = true;
+
+    const fetchData = async (isInitial = false) => {
       try {
         // Fetch News for broadcast
         try {
           const newsRes = await fetch(`${import.meta.env.VITE_API_BASE_URL}/news`);
           const newsData = await newsRes.json();
+          if (!isMounted) return;
           setNewsList(newsData.filter(n => n.status === 'Published'));
         } catch (e) {
           console.error("News fetch error:", e);
@@ -153,44 +179,60 @@ function TournamentView() {
 
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${id}`);
         const data = await response.json();
+        if (!isMounted) return;
         setTournament(data);
 
-        // Smart date selection: show current day if flying date, total on break days during tournament
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        if (isInitial) {
+          // Smart date selection: show current day if flying date, total on break days during tournament
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
 
-        const flyingDatesArr = data.flyingDates || [];
-        let bestIdx = 'total';
+          const flyingDatesArr = data.flyingDates || [];
+          let bestIdx = 'total';
 
-        if (flyingDatesArr.length > 0) {
-          const firstDate = new Date(flyingDatesArr[0]);
-          firstDate.setHours(0, 0, 0, 0);
+          if (flyingDatesArr.length > 0) {
+            const firstDate = new Date(flyingDatesArr[0]);
+            firstDate.setHours(0, 0, 0, 0);
 
-          const lastDate = new Date(flyingDatesArr[flyingDatesArr.length - 1]);
-          lastDate.setHours(0, 0, 0, 0);
+            const lastDate = new Date(flyingDatesArr[flyingDatesArr.length - 1]);
+            lastDate.setHours(0, 0, 0, 0);
 
-          // Check if today is a flying date
-          for (let i = 0; i < flyingDatesArr.length; i++) {
-            const d = new Date(flyingDatesArr[i]);
-            d.setHours(0, 0, 0, 0);
-            if (today.getTime() === d.getTime()) {
-              bestIdx = i;
-              break;
+            // Check if today is a flying date
+            for (let i = 0; i < flyingDatesArr.length; i++) {
+              const d = new Date(flyingDatesArr[i]);
+              d.setHours(0, 0, 0, 0);
+              if (today.getTime() === d.getTime()) {
+                bestIdx = i;
+                break;
+              }
             }
+            // If not on a flying date but between first and last, show total (break day)
+            // Otherwise if before first or after last, also show total
+            // bestIdx already defaults to 'total'
           }
-          // If not on a flying date but between first and last, show total (break day)
-          // Otherwise if before first or after last, also show total
-          // bestIdx already defaults to 'total'
+          setActiveDateIndex(bestIdx);
+          setLoading(false);
         }
-        setActiveDateIndex(bestIdx);
-
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching tournament:", error);
-        setLoading(false);
+        if (isInitial) {
+          setLoading(false);
+        }
       }
     };
-    fetchData();
+
+    // Initial fetch
+    fetchData(true);
+
+    // Poll every 10 seconds for live updates
+    const intervalId = setInterval(() => {
+      fetchData(false);
+    }, 10000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
   }, [id]);
 
   if (!tournament) return <div>Tournament not found</div>;
