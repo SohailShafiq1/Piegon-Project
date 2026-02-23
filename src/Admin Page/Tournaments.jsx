@@ -280,6 +280,69 @@ const Tournaments = () => {
     );
   };
 
+  const handleGlobalStartTimeChange = (newTime) => {
+    const oldTime = formData.startTime;
+
+    const scoringPigeons = formData.noteTimePigeons || formData.numPigeons || 0;
+    const helperPigeons = formData.helperPigeons || 0;
+    const totalPigeonsPerDay = formData.numPigeons || 0;
+    const numDays = formData.numDays || 1;
+
+    const updatedParticipants = (formData.participants || []).map((p) => {
+      // Work on a shallow copy so we don't mutate original
+      const updated = { ...p };
+
+      // If participant didn't have a custom start time, or it matched the old global time,
+      // keep it in sync with the new global start time.
+      if (!updated.startTime || updated.startTime === oldTime) {
+        updated.startTime = newTime;
+      }
+
+      // For dailyStartTimes, only update entries that were using the old global/participant time
+      if (Array.isArray(updated.dailyStartTimes)) {
+        updated.dailyStartTimes = updated.dailyStartTimes.map((t) => {
+          if (
+            !t || // empty
+            t === oldTime || // exactly old global
+            t === p.startTime // matched participant's previous start time
+          ) {
+            return newTime;
+          }
+          return t;
+        });
+      }
+
+      // Recalculate total time for this participant using the new global start time
+      updated.totalTime = calculateGrandTotal(
+        updated.pigeonTimes,
+        totalPigeonsPerDay,
+        newTime,
+        numDays,
+        scoringPigeons,
+        helperPigeons,
+        updated
+      );
+
+      return updated;
+    });
+
+    // Recalculate overall winners with the new global start time
+    const { firstWinner, firstTime, lastWinner, lastTime } = calculateWinners(
+      updatedParticipants,
+      newTime
+    );
+
+    setFormData({
+      ...formData,
+      startTime: newTime,
+      participants: updatedParticipants,
+      firstWinner,
+      firstTime,
+      lastWinner,
+      lastTime
+    });
+  };
+
   const handleTimeChange = (participantIndex, pigeonIndex, value) => {
     // Get a clean copy via JSON to remove any Mongoose proxies
     const plainParticipants = JSON.parse(JSON.stringify(formData.participants));
@@ -899,18 +962,18 @@ const Tournaments = () => {
               <button className="back-btn" onClick={() => setView('edit')}><FaArrowLeft /> Back to Edit</button>
               <div className="header-text-mini">
                 <h2>Pigeon Landing Times</h2>
-                <div className="tournament-info-bar">
-                  <p>{formData.name}</p>
-                  <div className="start-time-global-edit">
-                    <FaClock />
-                    <span>Tournament Start Time:</span>
-                    <input
-                      type="time"
-                      value={formData.startTime}
-                      onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                    />
+                  <div className="tournament-info-bar">
+                    <p>{formData.name}</p>
+                    <div className="start-time-global-edit">
+                      <FaClock />
+                      <span>Tournament Start Time:</span>
+                      <input
+                        type="time"
+                        value={formData.startTime}
+                        onChange={(e) => handleGlobalStartTimeChange(e.target.value)}
+                      />
+                    </div>
                   </div>
-                </div>
               </div>
             </div>
             <button
@@ -1177,7 +1240,7 @@ const Tournaments = () => {
                 <input
                   type="time"
                   value={formData.startTime}
-                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                  onChange={(e) => handleGlobalStartTimeChange(e.target.value)}
                 />
               </div>
 
