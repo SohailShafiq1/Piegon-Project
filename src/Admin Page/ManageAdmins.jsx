@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import './ManageAdmins.css';
 
 const ManageAdmins = () => {
@@ -10,6 +11,7 @@ const ManageAdmins = () => {
   const [editAdminId, setEditAdminId] = useState(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const currentUser = JSON.parse(localStorage.getItem('adminUser'));
   const token = localStorage.getItem('adminToken');
@@ -43,6 +45,16 @@ const ManageAdmins = () => {
     setMessage('');
     setError('');
 
+    // Normalize name and email to handle upper/lower case consistently
+    const trimmedName = name.trim();
+    const normalizedName = trimmedName
+      .split(/\s+/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+
+    const trimmedEmail = email.trim();
+    const normalizedEmail = trimmedEmail ? trimmedEmail.toLowerCase() : '';
+
     const url = editAdminId
       ? `${import.meta.env.VITE_API_BASE_URL}/admins/${editAdminId}`
       : `${import.meta.env.VITE_API_BASE_URL}/admins`;
@@ -56,7 +68,12 @@ const ManageAdmins = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ name, email, password: password || undefined, role }),
+        body: JSON.stringify({
+          name: normalizedName,
+          email: normalizedEmail || undefined,
+          password: password || undefined,
+          role
+        }),
       });
 
       const data = await response.json();
@@ -151,13 +168,23 @@ const ManageAdmins = () => {
             </div>
             <div className="form-group">
               <label>{editAdminId ? 'Password (Leave blank to keep current)' : 'Password (Required)'}</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required={!editAdminId}
-                autoComplete="new-password"
-              />
+              <div className="password-input-wrapper">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required={!editAdminId}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="toggle-password-visibility"
+                  onClick={() => setShowPassword(prev => !prev)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
             </div>
             <div className="form-group">
               <label>Role</label>
