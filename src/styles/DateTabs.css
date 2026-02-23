@@ -16,6 +16,7 @@
   border-radius: 4px;
   width: 100%; /* Use full width */
   box-sizing: border-box;
+  
 }
 
 .date-tab {
@@ -34,6 +35,7 @@
   justify-content: center;
   min-width: 0; 
   overflow: hidden; /* Prevent text overflow */
+  border-radius: 6px;
 }
 
 .date-tab:last-child {
