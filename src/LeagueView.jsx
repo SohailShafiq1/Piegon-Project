@@ -59,7 +59,7 @@ const LeagueView = () => {
                 <div className="league-tournament-body">
                   <div className="league-tournament-right">
                     <div className="league-tournament-info">
-                      <Link to={`/tournament/${t._id}`} style={{ textDecoration: 'none' }}>
+                      <Link to={`/${t.shortCode || t._id}`} style={{ textDecoration: 'none' }}>
                         <h3 className="tournament-name-blue">{t.name}</h3>
                       </Link>
                       <p className="tournament-dates-mini">

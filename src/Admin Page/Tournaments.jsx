@@ -248,9 +248,11 @@ const Tournaments = () => {
     setShowOwnerSuggestions(false);
   };
 
-  const handleCopyLink = (tournamentId, e) => {
+  const handleCopyLink = (shortCode, tournamentId, e) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/tournament/${tournamentId}`;
+    // Use shortCode if available, otherwise fallback to _id
+    const identifier = shortCode || tournamentId;
+    const url = `${window.location.origin}/${identifier}`;
     navigator.clipboard.writeText(url).then(() => {
       const target = e.currentTarget;
       const originalContent = target.innerHTML;
@@ -1626,7 +1628,7 @@ const Tournaments = () => {
                   >
                     <button
                       className="copy-link-btn"
-                      onClick={(e) => handleCopyLink(t._id, e)}
+                      onClick={(e) => handleCopyLink(t.shortCode, t._id, e)}
                       title="Copy Tournament Link"
                     >
                       <FaLink /> Copy Link

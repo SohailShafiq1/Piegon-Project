@@ -156,7 +156,8 @@ function Home() {
 }
 
 function TournamentView() {
-  const { id } = useParams();
+  const { id, code } = useParams();
+  const tournamentId = id || code; // Support both /tournament/:id and /:code routes
   const [tournament, setTournament] = useState(null);
   const [activeDateIndex, setActiveDateIndex] = useState(0);
   const [newsList, setNewsList] = useState([]);
@@ -177,7 +178,7 @@ function TournamentView() {
           console.error("News fetch error:", e);
         }
 
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${id}`);
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${tournamentId}`);
         const data = await response.json();
         if (!isMounted) return;
         setTournament(data);
@@ -233,7 +234,7 @@ function TournamentView() {
       isMounted = false;
       clearInterval(intervalId);
     };
-  }, [id]);
+  }, [tournamentId]);
 
   if (!tournament) return <div>Tournament not found</div>;
 
@@ -302,6 +303,8 @@ function App() {
               <Route path="users" element={<ManageAdmins />} />
               <Route path="settings" element={<GeneralSettings />} />
             </Route>
+            {/* Short code route - must be last to not interfere with other routes */}
+            <Route path="/:code" element={<TournamentView />} />
           </Routes>
         </React.Suspense>
       </div>
