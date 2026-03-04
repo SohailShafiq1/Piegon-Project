@@ -263,6 +263,8 @@ const Tournaments = () => {
         target.classList.remove('copied');
       }, 2000);
     });
+    // Open the tournament page in a new tab
+    window.open(url, '_blank');
   };
 
   const formatPlayerName = (name) => {
