@@ -90,9 +90,9 @@
 .leaderboard-table th {
   background-color: #f3cf66; /* Dark yellow top row */
   color: #ffffff;
-  padding: 8px 4px;
+  padding: 4px 2px;
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   text-align: center;
   border: 1px solid #e2e8f0;
   text-transform: uppercase;
@@ -128,9 +128,9 @@
 }
 
 .leaderboard-table td {
-  padding: 6px 4px;
+  padding: 3px 2px;
   border: 1px solid #edf2f7;
-  font-size: 0.82rem;
+  font-size: 0.7rem;
   color: #2d3748;
   text-align: center;
   vertical-align: middle;
@@ -143,8 +143,8 @@
 
 .leaderboard-table td:nth-child(2) {
   text-align: left;
-  padding-left: 8px;
-  min-width: 110px;
+  padding-left: 6px;
+  min-width: 80px;
   white-space: normal !important; /* Professional wrapping for long names */
 }
 
@@ -181,21 +181,59 @@
 
 @media (max-width: 600px) {
   .leaderboard-table th, .leaderboard-table td {
-    padding: 5px 2px;
-    font-size: 0.7rem;
+    padding: 2px 1px;
+    font-size: 0.65rem;
   }
   
-  .leaderboard-table th { font-size: 0.65rem; }
+  .leaderboard-table th { 
+    font-size: 0.58rem;
+    padding: 2px 1px;
+  }
+
+  .leaderboard-table td:nth-child(2) {
+    min-width: 60px;
+  }
 
   .player-img {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
   }
 
   .player-info span {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
   }
 
-  .total-cell { width: 45px; }
+  .total-cell { width: 35px; }
+}
+
+@media (max-width: 480px) {
+  .leaderboard-table th {
+    font-size: 0.55rem;
+    padding: 1px 0.5px;
+  }
+
+  .leaderboard-table td {
+    padding: 1px 0.5px;
+    font-size: 0.6rem;
+  }
+
+  .leaderboard-table td:nth-child(2) {
+    min-width: 50px;
+    padding-left: 4px;
+  }
+
+  .player-img {
+    width: 16px;
+    height: 16px;
+  }
+
+  .player-info span {
+    font-size: 0.55rem;
+  }
+
+  .total-cell { 
+    width: 30px;
+    font-size: 0.6rem;
+  }
 }
 
