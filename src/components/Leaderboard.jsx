@@ -27,9 +27,10 @@ const Leaderboard = ({ tournament, dateIndex }) => {
     const words = name.split(/\s+/);
     if (words.length <= 3) return name;
 
-    // Split long names into two lines to save horizontal space
-    const firstPart = words.slice(0, 3).join(' ');
-    const secondPart = words.slice(3).join(' ');
+    // Split long names ensuring at least 2 words per line
+    const midpoint = Math.ceil(words.length / 2);
+    const firstPart = words.slice(0, midpoint).join(' ');
+    const secondPart = words.slice(midpoint).join(' ');
     return (
       <>
         {firstPart}
@@ -86,7 +87,6 @@ const Leaderboard = ({ tournament, dateIndex }) => {
         <table className={`leaderboard-table ${dateIndex === 'total' ? 'total-view' : 'day-view'}`}>
           <thead>
             <tr>
-              <th>Sr</th>
               <th>Name</th>
               {dateIndex !== 'total' && <th>Start</th>}
               {dateIndex !== 'total' ? (
@@ -104,7 +104,6 @@ const Leaderboard = ({ tournament, dateIndex }) => {
           <tbody>
             {sortedParticipants.map((p, idx) => (
               <tr key={idx}>
-                <td>{idx + 1}</td>
                 <td className="name-cell">
                   <div className="player-info">
                     <img loading="lazy" src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" className="player-img" />

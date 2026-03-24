@@ -99,7 +99,7 @@
   white-space: nowrap;
 }
 
-.leaderboard-table th:nth-child(2) {
+.leaderboard-table th:nth-child(1) {
   text-align: left;
   padding-left: 10px;
 }
@@ -142,15 +142,16 @@
 }
 
 /* Even rows for START column - day view only */
-.leaderboard-table.day-view tbody tr:nth-child(even) td:nth-child(3) {
+.leaderboard-table.day-view tbody tr:nth-child(even) td:nth-child(2) {
   background-color: #bfdbfe !important; /* Slightly darker blue for even rows */
   color: #1e3a8a !important;
 }
 
-.leaderboard-table td:nth-child(2) {
+.leaderboard-table td:nth-child(1) {
   text-align: left;
   padding-left: 6px;
-  min-width: 80px;
+  min-width: 140px;
+  flex: 1;
   white-space: normal !important; /* Professional wrapping for long names */
 }
 
@@ -185,11 +186,14 @@
   width: 55px; /* Compact total */
 }
 
-/* START column - only data cells in blue (day view only) */
-.leaderboard-table.day-view td:nth-child(3) {
-   background-color: #f4ece6 !important; /* Light blue for cells */
+/* START column - only data cells (day view only) */
+.leaderboard-table.day-view td:nth-child(2) {
+  background-color: #f4ece6 !important;
   color: #d42626 !important;
   font-weight: 700;
+  width: auto;
+  white-space: nowrap;
+  padding: 3px 2px;
 }
 
 @media (max-width: 600px) {
@@ -203,8 +207,9 @@
     padding: 2px 1px;
   }
 
-  .leaderboard-table td:nth-child(2) {
-    min-width: 60px;
+  .leaderboard-table td:nth-child(1) {
+    min-width: 110px;
+    flex: 1;
   }
 
   .player-img {
@@ -230,9 +235,10 @@
     font-size: 0.6rem;
   }
 
-  .leaderboard-table td:nth-child(2) {
-    min-width: 50px;
+  .leaderboard-table td:nth-child(1) {
+    min-width: 80px;
     padding-left: 4px;
+    flex: 1;
   }
 
   .player-img {
