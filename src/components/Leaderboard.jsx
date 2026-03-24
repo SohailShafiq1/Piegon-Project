@@ -83,7 +83,7 @@ const Leaderboard = ({ tournament, dateIndex }) => {
       )}
 
       <div className="table-responsive">
-        <table className="leaderboard-table">
+        <table className={`leaderboard-table ${dateIndex === 'total' ? 'total-view' : 'day-view'}`}>
           <thead>
             <tr>
               <th>Sr</th>
