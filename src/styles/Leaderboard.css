@@ -99,7 +99,7 @@
   white-space: nowrap;
 }
 
-.leaderboard-table th:nth-child(1) {
+.leaderboard-table th:nth-child(2) {
   text-align: left;
   padding-left: 10px;
 }
@@ -142,12 +142,12 @@
 }
 
 /* Even rows for START column - day view only */
-.leaderboard-table.day-view tbody tr:nth-child(even) td:nth-child(2) {
+.leaderboard-table.day-view tbody tr:nth-child(even) td:nth-child(3) {
   background-color: #bfdbfe !important; /* Slightly darker blue for even rows */
   color: #1e3a8a !important;
 }
 
-.leaderboard-table td:nth-child(1) {
+.leaderboard-table td:nth-child(2) {
   text-align: left;
   padding-left: 6px;
   min-width: 140px;
@@ -187,7 +187,7 @@
 }
 
 /* START column - only data cells (day view only) */
-.leaderboard-table.day-view td:nth-child(2) {
+.leaderboard-table.day-view td:nth-child(3) {
   background-color: #f4ece6 !important;
   color: #d42626 !important;
   font-weight: 700;
@@ -207,7 +207,7 @@
     padding: 2px 1px;
   }
 
-  .leaderboard-table td:nth-child(1) {
+  .leaderboard-table td:nth-child(2) {
     min-width: 110px;
     flex: 1;
   }
@@ -235,7 +235,7 @@
     font-size: 0.6rem;
   }
 
-  .leaderboard-table td:nth-child(1) {
+  .leaderboard-table td:nth-child(2) {
     min-width: 80px;
     padding-left: 4px;
     flex: 1;

@@ -87,6 +87,7 @@ const Leaderboard = ({ tournament, dateIndex }) => {
         <table className={`leaderboard-table ${dateIndex === 'total' ? 'total-view' : 'day-view'}`}>
           <thead>
             <tr>
+              <th>Sr</th>
               <th>Name</th>
               {dateIndex !== 'total' && <th>Start</th>}
               {dateIndex !== 'total' ? (
@@ -104,6 +105,7 @@ const Leaderboard = ({ tournament, dateIndex }) => {
           <tbody>
             {sortedParticipants.map((p, idx) => (
               <tr key={idx}>
+                <td>{idx + 1}</td>
                 <td className="name-cell">
                   <div className="player-info">
                     <img loading="lazy" src={p.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&background=random`} alt="" className="player-img" />
