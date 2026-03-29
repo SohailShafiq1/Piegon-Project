@@ -186,6 +186,13 @@
   width: 55px; /* Compact total */
 }
 
+.piegon-cell {
+  background-color: #e8f4f8 !important;
+  font-weight: 700;
+  color: #000;
+  width: 55px; /* Compact piegon column */
+}
+
 /* START column - only data cells (day view only) */
 .leaderboard-table.day-view td:nth-child(3) {
   background-color: #f4ece6 !important;

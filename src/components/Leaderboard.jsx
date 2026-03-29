@@ -99,6 +99,7 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                   <th key={idx}>Day {idx + 1}</th>
                 ))
               )}
+              {dateIndex === 'total' && <th>Piegon</th>}
               <th>Total</th>
             </tr>
           </thead>
@@ -139,6 +140,11 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                       </td>
                     );
                   })
+                )}
+                {dateIndex === 'total' && (
+                  <td className="piegon-cell">
+                    {(p.pigeonTimes || []).filter(t => t && t !== '').length}
+                  </td>
                 )}
                 <td className="total-cell">
                   {dateIndex === 'total'
