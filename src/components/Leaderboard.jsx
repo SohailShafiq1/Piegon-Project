@@ -89,6 +89,7 @@ const Leaderboard = ({ tournament, dateIndex }) => {
             <tr>
               <th>Sr</th>
               <th>Name</th>
+              {dateIndex === 'total' && <th>Piegon</th>}
               {dateIndex !== 'total' && <th>Start</th>}
               {dateIndex !== 'total' ? (
                 [...Array(pigeonsPerDay)].map((_, i) => (
@@ -99,7 +100,6 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                   <th key={idx}>Day {idx + 1}</th>
                 ))
               )}
-              {dateIndex === 'total' && <th>Piegon</th>}
               <th>Total</th>
             </tr>
           </thead>
@@ -113,6 +113,11 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                     <span>{formatPlayerName(p.name)}</span>
                   </div>
                 </td>
+                {dateIndex === 'total' && (
+                  <td className="piegon-cell">
+                    {(p.pigeonTimes || []).filter(t => t && t !== '').length}
+                  </td>
+                )}
                 {dateIndex !== 'total' && <td>{formatDisplayTime((p.dailyStartTimes && p.dailyStartTimes[dateIndex]) || p.startTime || startTime)}</td>}
                 {dateIndex !== 'total' ? (
                   [...Array(pigeonsPerDay)].map((_, pIdx) => {
@@ -140,11 +145,6 @@ const Leaderboard = ({ tournament, dateIndex }) => {
                       </td>
                     );
                   })
-                )}
-                {dateIndex === 'total' && (
-                  <td className="piegon-cell">
-                    {(p.pigeonTimes || []).filter(t => t && t !== '').length}
-                  </td>
                 )}
                 <td className="total-cell">
                   {dateIndex === 'total'
