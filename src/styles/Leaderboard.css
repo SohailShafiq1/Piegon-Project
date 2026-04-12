@@ -203,6 +203,30 @@
   padding: 3px 2px;
 }
 
+/* Keep times readable when many pigeon columns are visible */
+.leaderboard-table.day-view.many-pigeons {
+  width: max-content;
+  min-width: 100%;
+}
+
+.leaderboard-table.day-view.many-pigeons th:nth-child(3),
+.leaderboard-table.day-view.many-pigeons td:nth-child(3) {
+  min-width: 58px;
+  width: 58px;
+  max-width: 58px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.leaderboard-table.day-view.many-pigeons th:nth-child(n+4):not(:last-child),
+.leaderboard-table.day-view.many-pigeons td:nth-child(n+4):not(:last-child) {
+  min-width: 46px;
+  width: 46px;
+  max-width: 46px;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
 @media (max-width: 600px) {
   .leaderboard-table th, .leaderboard-table td {
     padding: 2px 1px;

@@ -15,6 +15,7 @@ const Leaderboard = ({ tournament, dateIndex }) => {
   const pigeonsPerDay = numPigeons || 0;
   const scoringPigeons = tournament.noteTimePigeons || numPigeons || 0;
   const helperPigeons = tournament.helperPigeons || 0;
+  const hasManyPigeons = dateIndex !== 'total' && pigeonsPerDay > 12;
 
   // Helper to show HH:MM:SS strings
   const formatDisplayTime = (timeStr) => {
@@ -84,7 +85,7 @@ const Leaderboard = ({ tournament, dateIndex }) => {
       )}
 
       <div className="table-responsive">
-        <table className={`leaderboard-table ${dateIndex === 'total' ? 'total-view' : 'day-view'}`}>
+        <table className={`leaderboard-table ${dateIndex === 'total' ? 'total-view' : 'day-view'} ${hasManyPigeons ? 'many-pigeons' : ''}`}>
           <thead>
             <tr>
               <th>Sr</th>
