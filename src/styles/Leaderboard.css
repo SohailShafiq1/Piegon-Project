@@ -368,7 +368,7 @@
   }
 
   .leaderboard-table.day-view:not(.many-pigeons) .player-info {
-    gap: 0;
+    gap: 3px;
   }
 
   .leaderboard-table.day-view:not(.many-pigeons) .player-img {
