@@ -309,12 +309,17 @@
 
   .leaderboard-table.total-view td:nth-child(n+3),
   .leaderboard-table.total-view th:nth-child(n+3) {
-    font-size: 0.54rem;
+    font-size: 0.5rem;
   }
 
   .leaderboard-table.total-view .total-cell,
   .leaderboard-table.total-view .piegon-cell {
-    font-size: 0.54rem;
+    font-size: 0.5rem;
+  }
+
+  .leaderboard-table.total-view th:first-child,
+  .leaderboard-table.total-view td:first-child {
+    font-size: 0.48rem;
   }
 }
 
@@ -414,12 +419,17 @@
 
   .leaderboard-table.total-view td:nth-child(n+3),
   .leaderboard-table.total-view th:nth-child(n+3) {
-    font-size: 0.5rem;
+    font-size: 0.46rem;
   }
 
   .leaderboard-table.total-view .total-cell,
   .leaderboard-table.total-view .piegon-cell {
-    font-size: 0.5rem;
+    font-size: 0.46rem;
+  }
+
+  .leaderboard-table.total-view th:first-child,
+  .leaderboard-table.total-view td:first-child {
+    font-size: 0.44rem;
   }
 }
 
@@ -468,12 +478,17 @@
 
   .leaderboard-table.total-view td:nth-child(n+3),
   .leaderboard-table.total-view th:nth-child(n+3) {
-    font-size: 0.48rem;
+    font-size: 0.44rem;
   }
 
   .leaderboard-table.total-view .total-cell,
   .leaderboard-table.total-view .piegon-cell {
-    font-size: 0.48rem;
+    font-size: 0.44rem;
+  }
+
+  .leaderboard-table.total-view th:first-child,
+  .leaderboard-table.total-view td:first-child {
+    font-size: 0.42rem;
   }
 }
 
