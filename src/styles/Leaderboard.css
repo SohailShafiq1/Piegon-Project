@@ -287,7 +287,8 @@
 
   .leaderboard-table.day-view:not(.many-pigeons) td:nth-child(n+3):not(:last-child),
   .leaderboard-table.day-view:not(.many-pigeons) th:nth-child(n+3):not(:last-child) {
-    padding: 4px 1px 5px 3px;
+    padding: 4px 2px 5px 2px;
+    text-align: center;
   }
 
   .leaderboard-table.day-view:not(.many-pigeons) td:nth-child(2) {
@@ -342,7 +343,8 @@
 
   .leaderboard-table.day-view:not(.many-pigeons) td:nth-child(n+3):not(:last-child),
   .leaderboard-table.day-view:not(.many-pigeons) th:nth-child(n+3):not(:last-child) {
-    padding: 4px 1px 5px 3px;
+    padding: 4px 2px 5px 2px;
+    text-align: center;
   }
 
   .leaderboard-table.day-view:not(.many-pigeons) th:nth-child(1),
@@ -400,7 +402,8 @@
 
   .leaderboard-table.day-view:not(.many-pigeons) td:nth-child(n+3):not(:last-child),
   .leaderboard-table.day-view:not(.many-pigeons) th:nth-child(n+3):not(:last-child) {
-    padding: 4px 1px 5px 3px;
+    padding: 4px 2px 5px 2px;
+    text-align: center;
   }
 
   .leaderboard-table.day-view:not(.many-pigeons) th:nth-child(1),
