@@ -372,9 +372,11 @@
   }
 
   .leaderboard-table.day-view:not(.many-pigeons) .player-img {
-    width: 10px;
-    height: 10px;
-    min-width: 10px;
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    border-width: 1px;
+    box-shadow: 0 0 0 1px rgba(45, 55, 72, 0.2);
   }
 
   .leaderboard-table.day-view:not(.many-pigeons) .player-info span {
