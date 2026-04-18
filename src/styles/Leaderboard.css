@@ -287,8 +287,13 @@
 
   .leaderboard-table.day-view:not(.many-pigeons) td:nth-child(n+3):not(:last-child),
   .leaderboard-table.day-view:not(.many-pigeons) th:nth-child(n+3):not(:last-child) {
+    font-size: 0.54rem;
     padding: 4px 2px 5px 2px;
     text-align: center;
+  }
+
+  .leaderboard-table.day-view:not(.many-pigeons) .total-cell {
+    font-size: 0.54rem;
   }
 
   .leaderboard-table.day-view:not(.many-pigeons) td:nth-child(2) {
@@ -343,6 +348,7 @@
 
   .leaderboard-table.day-view:not(.many-pigeons) td:nth-child(n+3):not(:last-child),
   .leaderboard-table.day-view:not(.many-pigeons) th:nth-child(n+3):not(:last-child) {
+    font-size: 0.5rem;
     padding: 4px 2px 5px 2px;
     text-align: center;
   }
@@ -366,7 +372,9 @@
   }
 
   .leaderboard-table.day-view:not(.many-pigeons) .player-img {
-    display: none;
+    width: 10px;
+    height: 10px;
+    min-width: 10px;
   }
 
   .leaderboard-table.day-view:not(.many-pigeons) .player-info span {
@@ -389,7 +397,7 @@
   .leaderboard-table.day-view:not(.many-pigeons) .total-cell {
     min-width: 28px;
     width: 28px;
-    font-size: 0.65rem;
+    font-size: 0.5rem;
   }
 }
 
@@ -402,6 +410,7 @@
 
   .leaderboard-table.day-view:not(.many-pigeons) td:nth-child(n+3):not(:last-child),
   .leaderboard-table.day-view:not(.many-pigeons) th:nth-child(n+3):not(:last-child) {
+    font-size: 0.48rem;
     padding: 4px 2px 5px 2px;
     text-align: center;
   }
@@ -432,7 +441,7 @@
   .leaderboard-table.day-view:not(.many-pigeons) .total-cell {
     min-width: 26px;
     width: 26px;
-    font-size: 0.62rem;
+    font-size: 0.48rem;
   }
 }
 
