@@ -742,6 +742,76 @@ const Tournaments = () => {
     setView('edit');
   };
 
+  const handleGoToTimeEntry = async (t) => {
+    const isAssignedAdmin = (t.admin?._id || t.admin) === currentUser?.id;
+    const isSuperAdmin = currentUser?.role === 'Super Admin';
+    const relatedLeague = leagues.find(l => l.name === t.leagueName);
+    const isLeagueAdmin = (relatedLeague?.admin?._id || relatedLeague?.admin) === currentUser?.id;
+
+    if (!isAssignedAdmin && !isSuperAdmin && !isLeagueAdmin) {
+      setModalContent({
+        title: 'Access Denied',
+        message: 'You are not an admin for this tournament or its league.',
+        onConfirm: null
+      });
+      setModalOpen(true);
+      return;
+    }
+
+    setLoading(true);
+    let fullTournament = t;
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/tournaments/${t._id}`);
+      if (response.ok) {
+        fullTournament = await response.json();
+      }
+    } catch (err) {
+      console.error('Error fetching full tournament info:', err);
+    }
+    setLoading(false);
+
+    setSelectedTournament(fullTournament);
+    setPosterFiles([]);
+
+    const cleanParticipants = (fullTournament.participants || []).map(p =>
+      cleanParticipantForSave(p, fullTournament.numDays || 1, fullTournament.startTime || '06:00')
+    );
+
+    setFormData({
+      ...initialFormState,
+      ...fullTournament,
+      admin: fullTournament.admin?._id || fullTournament.admin,
+      startDate: fullTournament.startDate ? new Date(fullTournament.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      posters: fullTournament.posters || [],
+      headline: fullTournament.headline || '',
+      participants: cleanParticipants,
+      firstWinner: fullTournament.firstWinner || '',
+      firstTime: fullTournament.firstTime || '',
+      lastWinner: fullTournament.lastWinner || '',
+      lastTime: fullTournament.lastTime || ''
+    });
+
+    let bestIdx = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const flyingDatesArr = fullTournament.flyingDates || [];
+    if (flyingDatesArr.length > 0) {
+      for (let i = 0; i < flyingDatesArr.length; i++) {
+        const d = new Date(flyingDatesArr[i]);
+        d.setHours(0, 0, 0, 0);
+        if (today.getTime() === d.getTime()) {
+          bestIdx = i;
+          break;
+        } else if (d < today) {
+          bestIdx = i;
+        }
+      }
+    }
+    setActiveDateIndex(bestIdx);
+    setView('time-entry');
+  };
+
   const handleCreateNew = () => {
     setSelectedTournament(null);
     setFormData(initialFormState);
@@ -1687,6 +1757,17 @@ const Tournaments = () => {
                       <button className="edit-link">
                         {canEdit ? 'Edit Details' : 'View Only'}
                       </button>
+                      {canEdit && (
+                        <button
+                          className="add-time-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleGoToTimeEntry(t);
+                          }}
+                        >
+                          <FaClock /> Add Time
+                        </button>
+                      )}
                       {isUserAdmin && <span className="admin-badge">My Tournament</span>}
                     </div>
                   </div>
